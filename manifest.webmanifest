@@ -1,0 +1,32 @@
+{
+  "name": "플루트 계이름 운지법 배우기",
+  "short_name": "플루트 운지",
+  "description": "37개 플루트 계이름의 표준 운지를 손가락 애니메이션과 소리로 익히는 학습 앱",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f5f7fa",
+  "theme_color": "#20283a",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

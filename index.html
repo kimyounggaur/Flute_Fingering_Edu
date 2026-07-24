@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>플루트 운지법 배우기 — 리얼 운지 차트</title>
+<meta name="theme-color" content="#20283a">
+<meta name="description" content="37개 플루트 계이름의 표준 운지를 손가락 애니메이션과 소리로 익히는 모바일 학습 앱">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2320283a'/%3E%3Cpath d='M10 32h44' stroke='%23e8f0f4' stroke-width='8' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='32' r='8' fill='%23b8893a' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='42' cy='32' r='8' fill='%233498db' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<title>플루트 계이름 운지법 배우기</title>
 <style>
 /* ===== CSS: BASE ===== */
 :root{
@@ -117,7 +123,7 @@ button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px soli
 }
 /* @CSS-STEP5-END */
 /* ===== CSS: LEARNING FEATURES (STEP 6) ===== */
-.alt-tabs{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.alt-tabs{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
 .alt-tab{padding:5px 10px;border-radius:8px;border:1.5px solid #d6d0c4;background:#fff;
   font-size:.8rem;cursor:pointer;font-family:inherit;color:var(--ink)}
 .alt-tab.on{border-color:var(--gold);background:#faf3e3;box-shadow:inset 0 0 0 1px var(--gold);font-weight:700}
@@ -171,9 +177,6 @@ body[data-mode="quiz2"] .key:hover{filter:brightness(1.06)}
   cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center;gap:6px}
 .octave-section summary::before{content:"▾";transition:transform .15s}
 .octave-section:not([open]) summary::before{transform:rotate(-90deg)}
-#swipe-hint{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:var(--ink);color:#fff;
-  padding:8px 16px;border-radius:20px;font-size:.85rem;opacity:0;pointer-events:none;transition:opacity .4s;z-index:5}
-#swipe-hint.show{opacity:.92}
 @media (max-width:1023px){
   header h1{font-size:1.3rem}
   #note-info{gap:12px}
@@ -181,8 +184,6 @@ body[data-mode="quiz2"] .key:hover{filter:brightness(1.06)}
 }
 @media (max-width:767px){
   main{padding:6px 10px 24px}
-  #stage{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  #stage svg{min-width:900px}
   .alt-tab{min-height:44px}
   .note-btn{flex:1 1 60px}
   #note-info .ni-name{font-size:1.6rem}
@@ -190,8 +191,8 @@ body[data-mode="quiz2"] .key:hover{filter:brightness(1.06)}
 #print-sheet{display:none}
 @media print{
   @page{size:A4 portrait;margin:12mm}
-  header,main,footer,#help-overlay,#aria-status,#swipe-hint{display:none!important}
-  body{background:#fff}
+  header,main,footer,#app-shell,#help-overlay,#aria-status{display:none!important}
+  body{display:block;min-height:0;background:#fff}
   #print-sheet{display:block}
   #print-sheet h1{font-size:18pt;text-align:center;margin-bottom:2mm}
   #print-sheet .p-sub{text-align:center;color:#555;font-size:9pt;margin-bottom:5mm}
@@ -205,24 +206,379 @@ body[data-mode="quiz2"] .key:hover{filter:brightness(1.06)}
   #print-sheet .p-legend{font-size:8.5pt;color:#333;margin-bottom:3mm}
 }
 /* @CSS-STEP7-END */
+
+/* ===== CSS: FINAL MOBILE APP SHELL (F2~F8) ===== */
+:root{
+  --app-bg:#f5f7fa;
+  --surface:#ffffff;
+  --surface-soft:#eef2f6;
+  --ink:#20283a;
+  --muted:#5f6877;
+  --line:#d8dee8;
+  --accent:#b8893a;
+  --danger:#c23b32;
+  --success:#18845b;
+  --focus:#1d6fd8;
+  --radius:8px;
+  --tap:48px;
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+  --nav-h:60px;
+  --topbar-h:52px;
+}
+*{letter-spacing:0}
+html{background:var(--app-bg);overflow-x:clip}
+body{
+  min-height:100vh;
+  min-height:100dvh;
+  display:block;
+  background:var(--app-bg);
+  overflow-x:clip;
+  padding-bottom:calc(var(--nav-h) + var(--safe-bottom));
+}
+button,select,input{font-family:inherit;font-size:16px}
+button{touch-action:manipulation}
+.icon-sprite{position:absolute;width:0;height:0;overflow:hidden}
+.icon{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.icon-sm{width:18px;height:18px}
+.icon-button{
+  min-width:var(--tap);min-height:var(--tap);padding:0;border:1px solid transparent;border-radius:var(--radius);
+  background:transparent;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+}
+.icon-button:hover{background:var(--surface-soft);border-color:var(--line)}
+.icon-button[aria-pressed="true"]{background:#f8f1e5;border-color:var(--accent);color:#7a581d}
+button:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid var(--focus);outline-offset:2px
+}
+#app-shell{min-height:100vh;min-height:100dvh}
+#app-topbar{
+  position:sticky;top:0;z-index:30;height:var(--topbar-h);padding:0 10px;
+  display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.96);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(12px);text-align:left
+}
+.app-brand{display:flex;align-items:center;gap:9px;min-width:0;font-size:1rem;font-weight:800}
+.app-brand h1{font:inherit;margin:0}
+.app-brand-mark{
+  width:30px;height:30px;border-radius:50%;background:var(--ink);color:white;display:grid;place-items:center;flex:0 0 auto
+}
+.app-brand-mark::before,.app-brand-mark::after{content:"";position:absolute}
+.app-brand-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.top-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+#mode-nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:35;height:calc(var(--nav-h) + var(--safe-bottom));
+  padding:4px 8px var(--safe-bottom);background:rgba(255,255,255,.97);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;box-shadow:0 -8px 24px rgba(32,40,58,.07)
+}
+.mode-button{
+  min-width:0;min-height:52px;border:1px solid transparent;border-radius:var(--radius);background:transparent;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:.76rem;font-weight:700;cursor:pointer
+}
+.mode-button .icon{width:20px;height:20px}
+.mode-button.mode-active,.mode-button[aria-current="page"]{
+  color:var(--ink);background:#f8f1e5;border-color:#d9bd8f;box-shadow:inset 0 0 0 1px rgba(184,137,58,.22)
+}
+main#app-main{
+  width:min(100%,1280px);margin:0 auto;padding:8px 10px 28px;display:flex;flex-direction:column;gap:8px
+}
+#note-info{
+  order:1;margin:0;padding:10px 12px;min-height:86px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;box-shadow:none
+}
+#note-info .ni-main{min-width:0}
+#note-info .ni-title-row{display:flex;align-items:baseline;gap:7px;min-width:0}
+#note-info .ni-name{font-size:1.55rem;line-height:1.05;font-weight:850;white-space:nowrap}
+#note-info .ni-ko{font-size:.82rem;color:var(--muted);margin-top:3px}
+#note-info .ni-count{font-size:.75rem;color:var(--muted);font-weight:650;white-space:nowrap}
+#note-info .tip-disclosure{margin-top:5px;font-size:.78rem;color:var(--muted);max-width:100%}
+#note-info .tip-disclosure summary{
+  min-height:48px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#5f543f
+}
+#note-info .tip-disclosure p{padding:6px 0 2px;line-height:1.45;color:var(--ink)}
+#note-info .summary-actions{display:flex;align-items:center;gap:8px}
+#note-info .summary-actions .icon-button{min-width:48px;min-height:48px}
+#note-info .summary-actions button:disabled{opacity:.32;cursor:not-allowed}
+#note-info .alt-tabs{grid-column:1/-1;margin:0;padding-top:7px;border-top:1px solid var(--surface-soft)}
+.alt-tab{min-height:48px;padding:7px 11px;border-radius:var(--radius);border-color:var(--line)}
+.alt-tab.on{border-color:var(--accent);background:#f8f1e5;box-shadow:inset 0 0 0 1px var(--accent)}
+.alt-desc{grid-column:1/-1;margin:0;font-size:.78rem}
+#view-segment{order:2;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+#view-segment::-webkit-scrollbar{display:none}
+.camera-button{
+  flex:1 0 auto;min-height:48px;min-width:60px;padding:7px 9px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);color:var(--muted);font-size:.78rem;font-weight:700;cursor:pointer
+}
+.camera-button[aria-pressed="true"]{color:var(--ink);border-color:var(--accent);background:#f8f1e5;box-shadow:inset 0 0 0 1px var(--accent)}
+#stage{
+  order:3;height:clamp(205px,29dvh,255px);padding:4px;overflow:hidden;border:1px solid var(--line);
+  border-radius:var(--radius);background:#f9fbfc;box-shadow:none;contain:layout paint
+}
+#stage svg{display:block;width:100%;height:100%;min-width:0;max-width:100%;object-fit:contain}
+.stage-note{right:8px;bottom:6px;font-size:.66rem;color:#7e8794;background:rgba(255,255,255,.78);padding:2px 5px;border-radius:4px}
+#key-overview{
+  order:4;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;
+  min-height:68px;padding:6px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)
+}
+#key-overview svg{width:100%;height:54px;display:block}
+#key-overview .mini-key{fill:#e8f0f4;stroke:#b9c7cf;stroke-width:1.4;transform-box:fill-box;transform-origin:center}
+#key-overview .mini-key.pressed{stroke:#20283a;stroke-width:2;transform:scale(.9)}
+#key-overview .mini-key[data-group="thumb"].pressed{fill:var(--c-thumb)}
+#key-overview .mini-key[data-group="left"].pressed{fill:var(--c-left)}
+#key-overview .mini-key[data-group="right"].pressed{fill:var(--c-right)}
+#key-overview .mini-key[data-group="trill"].pressed{fill:var(--c-trill)}
+#key-overview .mini-key[data-group="pinky"].pressed{fill:var(--c-pinky)}
+#key-overview .mini-key.changed-on{stroke:#0d5f3f;stroke-width:3}
+#key-overview .mini-key.changed-off{stroke:#9a2e28;stroke-width:3;stroke-dasharray:3 2}
+.overview-copy{min-width:94px;font-size:.73rem;line-height:1.35;color:var(--muted)}
+.overview-copy strong{display:block;color:var(--ink);font-size:.82rem}
+#change-summary{margin-top:2px}
+.change-on{color:#0d6847}.change-off{color:#9a2e28}
+#selector-dock{
+  order:5;margin:0;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)
+}
+#selector-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.selector-tab{
+  min-height:48px;padding:6px 4px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-soft);
+  color:var(--muted);font-size:.75rem;font-weight:800;cursor:pointer;line-height:1.15
+}
+.selector-tab[aria-selected="true"]{background:#f8f1e5;color:var(--ink);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.selector-tab[data-group="low"][aria-selected="true"]{border-color:#2c6e9e}
+.selector-tab[data-group="high"][aria-selected="true"]{border-color:#b3452f}
+.selector-tab[data-group="accidental"][aria-selected="true"]{border-color:#7d4ba0}
+#selector-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+#selector-grid[data-group="accidental"]{grid-template-columns:repeat(5,minmax(0,1fr))}
+.group-note-btn,.note-btn{
+  position:relative;min-width:0;min-height:54px;padding:5px 3px;border:2px solid var(--line);border-radius:var(--radius);
+  background:#fff;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05
+}
+.group-note-btn .nb-ko,.note-btn .nb-ko{font-size:.91rem;font-weight:850}
+.group-note-btn .nb-en,.note-btn .nb-en{font-size:.65rem;color:var(--muted);margin-top:3px;white-space:nowrap}
+.group-note-btn.black,.note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
+.group-note-btn.black .nb-en,.note-btn.black .nb-en{color:#c7cfdb}
+.group-note-btn.active,.note-btn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(184,137,58,.25)}
+.group-note-btn.active::after,.note-btn.active::after{
+  content:"✓";position:absolute;top:2px;right:4px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent);color:#fff;font-size:.65rem;font-weight:900
+}
+.info-dot{position:absolute;left:5px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px #fff}
+.black .info-dot{box-shadow:0 0 0 2px var(--ink)}
+.kbd-badges{position:absolute;left:3px;bottom:3px;display:flex;gap:2px;pointer-events:none}
+.kbd-badge{padding:2px 3px;border-radius:3px;background:rgba(255,255,255,.94);font-size:.48rem;font-weight:850;color:#20283a;border:1px solid currentColor}
+.kbd-badge.ctrl{color:#2c6e9e}.kbd-badge.shift{color:#b3452f}.kbd-badge.alt{color:#7d4ba0}
+.kbd-badge.kbd-flash{animation:kbd-flash .3s ease-out}
+@keyframes kbd-flash{50%{transform:scale(1.15);background:currentColor;color:#fff}}
+.selector-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.secondary-button,.primary-button{
+  min-height:var(--tap);padding:8px 13px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);color:var(--ink);font-weight:750;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px
+}
+.primary-button{background:var(--ink);color:#fff;border-color:var(--ink)}
+.secondary-button:hover{border-color:var(--accent)}
+#kbd-guide{order:4;margin:0 0 8px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-soft);padding:0 10px}
+#kbd-guide summary{min-height:44px;font-size:.78rem;font-weight:800;color:var(--muted);display:flex;align-items:center;cursor:pointer}
+.kbd-guide-body{padding:0 0 10px;font-size:.72rem;color:var(--muted)}
+.kbd-guide-row{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center;padding:4px;border-radius:5px}
+.kbd-guide-row.row-flash{background:#fff2ce}
+.kbd-guide-row kbd{display:inline-block;min-width:22px;padding:2px 4px;margin:1px;border:1px solid #aeb7c4;border-bottom-width:2px;border-radius:4px;background:#fff;color:var(--ink);font-size:.62rem;text-align:center}
+.kbd-guide-note{margin-top:5px;line-height:1.45}
+#quiz-panel{
+  order:6;margin:0;padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)
+}
+.quiz-mode-tabs{display:flex;gap:8px;margin-bottom:12px}
+.quiz-mode-tabs button{flex:1;min-height:48px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-soft);font-weight:800;color:var(--muted);cursor:pointer}
+.quiz-mode-tabs button[aria-pressed="true"]{background:#f8f1e5;color:var(--ink);border-color:var(--accent)}
+.quiz-head{gap:10px;margin-bottom:12px}
+.quiz-head select{min-height:48px;font-size:16px}
+.quiz-choice{min-height:56px;border-radius:var(--radius)}
+.quiz-actions button{min-height:48px;border-radius:var(--radius)}
+#key-input-pad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.key-pad-group{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.key-pad-group[data-size="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.key-pad-heading{grid-column:1/-1;font-size:.76rem;color:var(--muted);font-weight:800;margin-top:4px}
+.practice-key{
+  min-height:50px;border:2px solid var(--line);border-radius:var(--radius);background:#f8fafb;color:var(--ink);font-size:.78rem;font-weight:800;cursor:pointer
+}
+.practice-key[aria-pressed="true"]{background:#dce8f0;border-color:var(--ink);box-shadow:inset 0 -3px 0 rgba(32,40,58,.18)}
+.practice-key.grade-ok{border-color:var(--success);box-shadow:inset 0 0 0 2px var(--success)}
+.practice-key.grade-wrong{border-color:var(--danger);box-shadow:inset 0 0 0 2px var(--danger)}
+.practice-key.grade-miss{border-color:#a66c00;border-style:dashed;box-shadow:inset 0 0 0 1px #a66c00}
+.grade-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:.76rem;color:var(--muted)}
+.grade-legend span::before{content:"";display:inline-block;width:11px;height:11px;border:2px solid currentColor;border-radius:3px;margin-right:4px;vertical-align:-2px}
+.grade-legend .ok{color:var(--success)}.grade-legend .wrong{color:var(--danger)}.grade-legend .miss{color:#8a5b00}
+.speed-gauge{height:10px;background:var(--surface-soft);border-radius:6px;overflow:hidden;margin:10px 0}
+.speed-gauge-fill{height:100%;width:100%;background:linear-gradient(90deg,var(--success),#d6a020,var(--danger));transform-origin:left;animation:speed-count 5s linear forwards}
+@keyframes speed-count{to{transform:scaleX(0)}}
+.speed-question{text-align:center;padding:10px 0}.speed-question .big{font-size:1.6rem;font-weight:900}
+.practice-launchers{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.mastery-list{display:grid;gap:6px;margin-top:10px}
+.mastery-row{display:grid;grid-template-columns:minmax(78px,1fr) 5fr auto;align-items:center;gap:8px;font-size:.74rem}
+.mastery-track{height:8px;background:var(--surface-soft);border-radius:5px;overflow:hidden}
+.mastery-track span{display:block;height:100%;background:var(--accent);width:calc(var(--mastery) * 20%)}
+.sheet-overlay{
+  position:fixed;inset:0;z-index:60;display:flex;align-items:flex-end;justify-content:center
+}
+.sheet-overlay[hidden]{display:none}
+.sheet-backdrop{position:absolute;inset:0;background:rgba(32,40,58,.5)}
+.bottom-sheet{
+  position:relative;z-index:1;width:min(100%,680px);max-height:70dvh;overflow:auto;background:var(--surface);
+  border-radius:var(--radius) var(--radius) 0 0;padding:14px 16px calc(16px + var(--safe-bottom));box-shadow:0 -18px 50px rgba(0,0,0,.2)
+}
+.sheet-header{position:sticky;top:-14px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);padding:8px 0 10px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.sheet-header h2{font-size:1.05rem}
+.sheet-list{display:grid;gap:10px}
+.sheet-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:6px 0;border-bottom:1px solid var(--surface-soft)}
+.sheet-row label{font-weight:700}.sheet-row small{display:block;color:var(--muted);font-weight:400;margin-top:2px}
+.sheet-row select{min-height:48px;border:1px solid var(--line);border-radius:var(--radius);padding:6px 9px;background:#fff}
+#note-selector{margin:0}
+.octave-section{margin-bottom:10px;border:1px solid var(--line);border-radius:var(--radius);padding:0 8px}
+.octave-section summary{color:var(--ink);font-weight:800;margin:0;min-height:48px}
+.octave-section .note-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 0 10px}
+.octave-section .note-btn{min-height:58px}
+#help-overlay{z-index:70;align-items:flex-end}
+.help-card{
+  width:min(100%,960px);max-height:92dvh;border-radius:var(--radius) var(--radius) 0 0;padding:16px;
+  box-shadow:0 -18px 50px rgba(0,0,0,.25)
+}
+.help-card h2{padding-right:52px}
+#help-close{top:8px;right:10px;border-radius:var(--radius);font-size:0}
+#help-close{min-width:48px;min-height:48px}
+#help-close .icon{margin:auto}
+.help-section{border:1px solid var(--line);border-radius:var(--radius);margin:10px 0;padding:0 10px}
+.help-section summary{min-height:48px;display:flex;align-items:center;font-weight:850;cursor:pointer}
+.help-section-body{padding:0 0 12px}
+.help-map-grid{display:grid;gap:10px}
+.help-map{border:1px solid var(--line);border-radius:var(--radius);padding:8px;background:#f9fbfc}
+.help-map h3{font-size:.85rem;margin-bottom:5px}
+.help-map svg{height:150px;width:100%;border:0;border-radius:4px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
+.legend .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.help-rules{margin:4px 0 0 18px;line-height:1.65;font-size:.86rem}
+#app-toast{
+  position:fixed;left:50%;bottom:calc(var(--nav-h) + var(--safe-bottom) + 14px);z-index:90;transform:translateX(-50%) translateY(12px);
+  max-width:min(90vw,480px);padding:10px 14px;border-radius:var(--radius);background:var(--ink);color:#fff;
+  font-size:.82rem;opacity:0;pointer-events:none;transition:opacity .16s,transform .16s
+}
+#app-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{padding:12px 10px 20px;color:#7e8794;font-size:.72rem}
+.key.changed-on .grade-ring{opacity:1;fill:none;stroke:#0d6847;stroke-width:5}
+.key.changed-off .grade-ring{opacity:1;fill:none;stroke:#9a2e28;stroke-width:5;stroke-dasharray:7 5}
+.key.changed-on::after,.key.changed-off::after{content:""}
+body[data-mode="quiz1"] #selector-dock,
+body[data-mode="quiz2"] #selector-dock,
+body[data-mode="quiz1"] #view-segment,
+body[data-mode="quiz2"] #view-segment{display:none}
+body[data-mode="learn"] #quiz-panel{display:none}
+body[data-mode="speed"] #selector-dock{display:block}
+body[data-mode="speed"] #view-segment{display:none}
+body[data-mode="speed"] #note-info{display:none}
+body[data-mode="quiz1"] #note-info .summary-actions,
+body[data-mode="quiz2"] #note-info .summary-actions{display:none}
+
+@media (hover:none),(pointer:coarse){
+  .kbd-badges,#kbd-guide{display:none!important}
+}
+@media (max-width:359px){
+  #selector-grid[data-group="accidental"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .group-note-btn .nb-ko{font-size:.82rem}
+}
+@media (min-width:768px){
+  main#app-main{padding:14px 20px 34px;gap:12px}
+  #note-info{padding:12px 16px}
+  #stage{height:clamp(290px,42vw,410px)}
+  #key-overview{min-height:78px}
+  #key-overview svg{height:62px}
+  #selector-grid{grid-template-columns:repeat(8,minmax(0,1fr))}
+  #selector-grid[data-group="accidental"]{grid-template-columns:repeat(10,minmax(0,1fr))}
+  .octave-section .note-grid{grid-template-columns:repeat(8,minmax(0,1fr))}
+  #key-input-pad{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .help-map-grid{grid-template-columns:repeat(3,1fr)}
+  .help-map svg{height:190px}
+}
+@media (min-width:1024px){
+  body{padding-bottom:0}
+  #app-topbar{padding:0 max(20px,calc((100vw - 1240px)/2));}
+  #mode-nav{
+    position:sticky;top:var(--topbar-h);left:auto;right:auto;bottom:auto;z-index:25;height:56px;padding:6px max(20px,calc((100vw - 1240px)/2));
+    border-top:0;border-bottom:1px solid var(--line);box-shadow:none;display:flex;justify-content:flex-start;background:rgba(255,255,255,.96)
+  }
+  .mode-button{min-width:150px;min-height:42px;flex-direction:row;font-size:.84rem;padding:0 16px}
+  main#app-main{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:
+    "summary summary"
+    "stage selector"
+    "overview selector"
+    "quiz quiz";align-items:start}
+  #note-info{grid-area:summary}
+  #view-segment{display:none!important}
+  #stage{grid-area:stage;order:unset;height:min(40vw,430px)}
+  #key-overview{grid-area:overview;order:unset}
+  #selector-dock{grid-area:selector;order:unset;position:sticky;top:calc(var(--topbar-h) + 68px)}
+  #selector-tabs{grid-template-columns:1fr}
+  #selector-grid,#selector-grid[data-group="accidental"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #quiz-panel{grid-area:quiz;order:unset}
+  #app-toast{bottom:20px}
+  #help-overlay{align-items:center}
+  .help-card{border-radius:var(--radius)}
+  .bottom-sheet{border-radius:var(--radius) var(--radius) 0 0}
+}
+@media (prefers-reduced-motion:reduce){
+  #app-toast,.speed-gauge-fill{transition:none!important;animation:none!important}
+}
+@media (forced-colors:active){
+  .mode-button.mode-active,.selector-tab[aria-selected="true"],.group-note-btn.active,.note-btn.active,
+  .camera-button[aria-pressed="true"],.practice-key[aria-pressed="true"]{outline:3px solid Highlight;outline-offset:-3px}
+  .mini-key.pressed{fill:Highlight!important;stroke:CanvasText!important}
+  .kbd-badge{forced-color-adjust:none}
+}
+@media print{
+  #app-topbar,#mode-nav,#view-segment,#key-overview,#selector-dock,.sheet-overlay,#help-overlay,#app-toast{display:none!important}
+}
 </style>
 </head>
 <body data-mode="learn">
 
-<header>
-  <h1>🎼 플루트 운지법 배우기 — 리얼 운지 차트</h1>
-  <p class="subtitle">음을 선택하면 손가락이 움직여요</p>
-  <div class="header-controls" id="header-controls">
-    <button id="mode-learn" class="mode-active" data-mode="learn">📖 배우기</button>
-    <button id="mode-quiz1" data-mode="quiz1">🎯 퀴즈1 · 운지 보고 음 맞히기</button>
-    <button id="mode-quiz2" data-mode="quiz2">🎹 퀴즈2 · 음 보고 운지 만들기</button>
-    <button id="sound-toggle" aria-pressed="true" aria-label="소리 켜기/끄기">🔊 소리</button>
-    <button id="help-btn" aria-label="도움말 열기">❓ 도움말</button>
-    <button id="print-btn" aria-label="인쇄용 전체 차트 인쇄">🖨 인쇄용 전체 차트</button>
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+  <symbol id="icon-speaker" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></symbol>
+  <symbol id="icon-volume-x" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m17 9 5 5M22 9l-5 5"/></symbol>
+  <symbol id="icon-help-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.5 2.5 0 1 1 4.1 1.9c-1.2.8-1.8 1.4-1.8 2.6"/><path d="M12 17h.01"/></symbol>
+  <symbol id="icon-more-horizontal" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  <symbol id="icon-printer" viewBox="0 0 24 24"><path d="M7 9V3h10v6"/><rect x="5" y="14" width="14" height="7" rx="1"/><path d="M5 17H3v-7h18v7h-2"/></symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></symbol>
+  <symbol id="icon-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+  <symbol id="icon-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="icon-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="icon-book-open" viewBox="0 0 24 24"><path d="M3 5.5A4 4 0 0 1 7 4h4v16H7a4 4 0 0 0-4 1.5z"/><path d="M21 5.5A4 4 0 0 0 17 4h-4v16h4a4 4 0 0 1 4 1.5z"/></symbol>
+  <symbol id="icon-hand" viewBox="0 0 24 24"><path d="M7 11V5a1.5 1.5 0 0 1 3 0v5-7a1.5 1.5 0 0 1 3 0v7-5a1.5 1.5 0 0 1 3 0v6-3a1.5 1.5 0 0 1 3 0v6c0 4-3 7-7 7h-1c-3 0-5-1.5-7-4l-2-3a1.5 1.5 0 0 1 2.4-1.8z"/></symbol>
+  <symbol id="icon-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="icon-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.9 7.6-4.6M8.2 13.1l7.6 4.6"/></symbol>
+  <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></symbol>
+  <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M18.5 9A7.5 7.5 0 1 0 19 16"/></symbol>
+</svg>
+
+<div id="app-shell">
+<header id="app-topbar">
+  <div class="app-brand"><span class="app-brand-mark" aria-hidden="true">●</span><h1 class="app-brand-text">플루트 운지</h1></div>
+  <div class="top-actions" id="header-controls">
+    <button id="sound-toggle" class="icon-button" aria-pressed="true" aria-label="소리 끄기" title="소리 끄기"><svg class="icon"><use href="#icon-speaker"></use></svg></button>
+    <button id="help-btn" class="icon-button" aria-label="도움말 열기" title="도움말"><svg class="icon"><use href="#icon-help-circle"></use></svg></button>
+    <button id="more-btn" class="icon-button" aria-haspopup="dialog" aria-controls="more-sheet" aria-label="더보기 열기" title="더보기"><svg class="icon"><use href="#icon-more-horizontal"></use></svg></button>
   </div>
 </header>
 
-<main>
+<nav id="mode-nav" aria-label="학습 모드">
+  <button id="mode-learn" class="mode-button mode-active" data-mode="learn" aria-current="page"><svg class="icon"><use href="#icon-book-open"></use></svg><span>배우기</span></button>
+  <button id="mode-quiz2" class="mode-button" data-mode="quiz2"><svg class="icon"><use href="#icon-hand"></use></svg><span>직접 누르기</span></button>
+  <button id="mode-quiz1" class="mode-button" data-mode="quiz1"><svg class="icon"><use href="#icon-target"></use></svg><span>퀴즈</span></button>
+</nav>
+
+<main id="app-main">
+  <div id="note-info"><!-- @NOTE-INFO --></div>
+  <div id="view-segment" role="group" aria-label="플루트 보기 영역">
+    <button class="camera-button" data-camera="auto" aria-pressed="true">자동</button>
+    <button class="camera-button" data-camera="all" aria-pressed="false">전체</button>
+    <button class="camera-button" data-camera="left" aria-pressed="false">왼손</button>
+    <button class="camera-button" data-camera="right" aria-pressed="false">오른손</button>
+    <button class="camera-button" data-camera="foot" aria-pressed="false">새끼·풋</button>
+  </div>
   <div id="stage">
     <svg id="main-svg" viewBox="0 0 1600 560" role="img" aria-label="플루트 운지 다이어그램: 선택한 음의 키와 손가락 상태를 보여줍니다">
       <title>플루트 운지 다이어그램</title>
@@ -516,22 +872,37 @@ body[data-mode="quiz2"] .key:hover{filter:brightness(1.06)}
       <g id="debug-layer"></g>
     </svg>
     <div class="stage-note">※ 학습용으로 위/아래로 펼친 그림이에요</div>
-    <div id="swipe-hint" aria-hidden="true">옆으로 밀어보세요 👉</div>
   </div>
 
-  <div id="note-info"><!-- @NOTE-INFO --></div>
-  <div id="autoplay-bar">
-    <button id="autoplay-btn">▶ 도레미 자동 재생</button>
-    <label>속도
-      <select id="autoplay-bpm">
-        <option value="80">느리게 (80)</option>
-        <option value="100" selected>보통 (100)</option>
-        <option value="132">빠르게 (132)</option>
-      </select>
-    </label>
+  <div id="key-overview" aria-label="15키 전체 운지 미니맵">
+    <div id="key-overview-map"></div>
+    <div class="overview-copy">
+      <strong id="key-overview-count">15키 중 0개 누름</strong>
+      <div id="change-summary">첫 음을 선택했어요</div>
+    </div>
   </div>
-  <div id="note-selector"><!-- @NOTE-SELECTOR --></div>
+
+  <section id="selector-dock" aria-label="계이름 선택">
+    <details id="kbd-guide" open>
+      <summary>키보드로 빠르게 고르기</summary>
+      <div class="kbd-guide-body" id="kbd-guide-body"></div>
+    </details>
+    <div id="selector-tabs" role="tablist" aria-label="계이름 분류"></div>
+    <div id="selector-grid" role="tabpanel"></div>
+    <div class="selector-footer">
+      <button id="all-notes-btn" class="secondary-button" aria-haspopup="dialog" aria-controls="all-notes-sheet"><svg class="icon icon-sm"><use href="#icon-grid"></use></svg>전체 37음 보기</button>
+      <span id="selector-description" class="sr-only"></span>
+    </div>
+  </section>
+
   <div id="quiz-panel" hidden>
+    <div class="quiz-mode-tabs" role="group" aria-label="퀴즈 종류">
+      <button id="quiz-kind-standard" aria-pressed="true">10문제 퀴즈</button>
+      <button id="quiz-kind-speed" aria-pressed="false">스피드 연습</button>
+    </div>
+    <div class="practice-launchers">
+      <button id="daily-practice-btn" class="secondary-button">오늘의 5분 연습</button>
+    </div>
     <div class="quiz-head">
       <label>출제 범위
         <select id="quiz-range">
@@ -548,26 +919,71 @@ body[data-mode="quiz2"] .key:hover{filter:brightness(1.06)}
 </main>
 
 <footer>운지 데이터: flutetunes.com · Woodwind Fingering Guide 교차 검증</footer>
+</div><!-- /#app-shell -->
+
 <div id="print-sheet" aria-hidden="true"></div>
 <div id="aria-status" class="sr-only" aria-live="polite"></div>
+<div id="app-toast" role="status" aria-live="polite"></div>
+
+<div id="more-overlay" class="sheet-overlay" hidden>
+  <div id="sheet-backdrop" class="sheet-backdrop"></div>
+  <section id="more-sheet" class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="more-title" tabindex="-1">
+    <div class="sheet-header">
+      <h2 id="more-title">더보기</h2>
+      <button id="more-close" class="icon-button" aria-label="더보기 닫기"><svg class="icon"><use href="#icon-x"></use></svg></button>
+    </div>
+    <div class="sheet-list">
+      <div class="sheet-row">
+        <label for="autoplay-bpm">자동 재생 속도<small>재생 중에도 바로 반영돼요</small></label>
+        <select id="autoplay-bpm">
+          <option value="80">느리게 · 80</option>
+          <option value="100" selected>보통 · 100</option>
+          <option value="132">빠르게 · 132</option>
+        </select>
+      </div>
+      <div class="sheet-row">
+        <div><b>현재 음 공유</b><small>지금 보는 음으로 바로 열리는 링크</small></div>
+        <button id="share-note-btn" class="secondary-button"><svg class="icon icon-sm"><use href="#icon-share"></use></svg>공유</button>
+      </div>
+      <div class="sheet-row">
+        <div><b>전체 운지표 인쇄</b><small>37개 기본 운지를 A4로 정리해요</small></div>
+        <button id="print-btn" class="secondary-button" aria-label="인쇄용 전체 차트 인쇄"><svg class="icon icon-sm"><use href="#icon-printer"></use></svg>인쇄</button>
+      </div>
+      <div class="sheet-row" id="install-row" hidden>
+        <div><b>앱으로 설치</b><small>홈 화면에서 오프라인으로 사용해요</small></div>
+        <button id="install-app-btn" class="secondary-button">설치</button>
+      </div>
+      <div class="sheet-row" id="update-row" hidden>
+        <div><b>새 버전 준비됨</b><small>학습 상태를 저장하고 업데이트해요</small></div>
+        <button id="apply-update-btn" class="secondary-button"><svg class="icon icon-sm"><use href="#icon-refresh"></use></svg>적용</button>
+      </div>
+      <div id="progress-summary"></div>
+      <div class="sheet-row">
+        <div><b>진도 초기화</b><small>이 기기의 학습 기록만 지워요</small></div>
+        <button id="reset-progress-btn" class="secondary-button">초기화</button>
+      </div>
+      <p style="color:var(--muted);font-size:.78rem;line-height:1.5">플루트 계이름 운지법 배우기 · C4~C7 표준 운지 37음</p>
+    </div>
+  </section>
+</div>
+
+<div id="all-notes-overlay" class="sheet-overlay" hidden>
+  <div class="sheet-backdrop"></div>
+  <section id="all-notes-sheet" class="bottom-sheet" role="dialog" aria-modal="true" aria-labelledby="all-notes-title" tabindex="-1">
+    <div class="sheet-header">
+      <h2 id="all-notes-title">전체 37음</h2>
+      <button id="all-notes-close" class="icon-button" aria-label="전체 음 닫기"><svg class="icon"><use href="#icon-x"></use></svg></button>
+    </div>
+    <div id="note-selector"><!-- @NOTE-SELECTOR --></div>
+  </section>
+</div>
+
 <div id="help-overlay" hidden role="dialog" aria-modal="true" aria-label="도움말">
   <div class="help-backdrop"></div>
   <div class="help-card">
-    <button id="help-close" aria-label="도움말 닫기">✕</button>
+    <button id="help-close" aria-label="도움말 닫기"><svg class="icon"><use href="#icon-x"></use></svg></button>
     <h2>운지표 보는 법</h2>
-    <svg id="help-svg" viewBox="0 0 1600 560" role="img" aria-label="키 이름이 표시된 플루트 그림"></svg>
-    <div class="legend" style="margin-top:12px;display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem">
-      <span><span class="dot" style="background:var(--c-thumb);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px"></span>엄지</span>
-      <span><span class="dot" style="background:var(--c-left);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px"></span>왼손</span>
-      <span><span class="dot" style="background:var(--c-right);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px"></span>오른손</span>
-      <span><span class="dot" style="background:var(--c-trill);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px"></span>트릴·사이드(검지 옆면)</span>
-      <span><span class="dot" style="background:var(--c-pinky);display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px"></span>새끼 특수키</span>
-    </div>
-    <ul class="help-rules">
-      <li><b>E♭키를 떼는 음은 7개</b> — 저음쪽 C4·C♯4·D4·D5 + 최고음쪽 B♭6·B6·C7. 나머지는 전부 누른 채예요.</li>
-      <li><b>엄지를 떼는 음</b>: C5·C♯5·C6·C♯6·G6·G♯6·C7.</li>
-      <li><b>2옥타브에서 1옥타브와 달라지는 음은 4개뿐</b>: C5·C♯5(대부분 개방) + D5·E♭5(왼손 검지 개방).</li>
-    </ul>
+    <div id="help-content"></div>
   </div>
 </div>
 <!-- @OVERLAYS -->
@@ -638,6 +1054,7 @@ function validateData(){
   if (has("C5","thumbB"))                               errors.push("C5에 thumbB가 있으면 안 됨");
   if (has("G6","thumbB"))                               errors.push("G6에 thumbB가 있으면 안 됨");
   if (!has("As6","tr1") || has("As6","eb"))             errors.push("As6은 tr1 있고 eb 없어야 함");
+  if (!has("B6","tr2") || has("B6","eb"))               errors.push("B6은 tr2 있고 eb 없어야 함");
   if (!has("C7","gis") || has("C7","thumbB") || has("C7","eb")) errors.push("C7은 gis 있고 thumbB·eb 없어야 함");
   if (errors.length){ errors.forEach(e => console.error("❌ DATA:", e)); }
   else console.log("✅ DATA OK: 37 notes validated");
@@ -646,12 +1063,62 @@ function validateData(){
 
 /* ----- 플루트 SVG 셀프체크 ----- */
 function validateFluteSvg(){
-  const ids = ["key-thumb-bb","key-thumb-b","key-l1","key-l2","key-l3","key-gis","key-bb-side",
-               "key-tr1","key-tr2","key-r1","key-r2","key-r3","key-eb","key-low-cis","key-low-c"];
+  const ids = KEY_IDS.map(keyIdToDom);
   const missing = ids.filter(id => !document.getElementById(id));
   if (missing.length) console.error("❌ FLUTE: 누락된 키", missing);
   else console.log("✅ FLUTE OK: 15 keys rendered");
   return missing.length === 0;
+}
+
+const NOTE_GROUPS = Object.freeze({
+  low: Object.freeze({
+    label: "낮은 계이름", modifier: "ctrl", shortcutLabel: "Ctrl",
+    desc: "가온 도(C4)부터 도레미파솔라시도",
+    codes: Object.freeze(["Digit1","Digit2","Digit3","Digit4","Digit5","Digit6","Digit7","Digit8"]),
+    noteIds: Object.freeze(["C4","D4","E4","F4","G4","A4","B4","C5"])
+  }),
+  high: Object.freeze({
+    label: "높은 계이름", modifier: "shift", shortcutLabel: "Shift",
+    desc: "높은 도(C5)부터 도레미파솔라시도",
+    codes: Object.freeze(["Digit1","Digit2","Digit3","Digit4","Digit5","Digit6","Digit7","Digit8"]),
+    noteIds: Object.freeze(["C5","D5","E5","F5","G5","A5","B5","C6"])
+  }),
+  accidental: Object.freeze({
+    label: "반음(♯)", modifier: "alt", shortcutLabel: "Alt",
+    desc: "1~2옥타브 검은건반 10개",
+    codes: Object.freeze(["Digit1","Digit2","Digit3","Digit4","Digit5","Digit6","Digit7","Digit8","Digit9","Digit0"]),
+    noteIds: Object.freeze(["Cs4","Ds4","Fs4","Gs4","As4","Cs5","Ds5","Fs5","Gs5","As5"])
+  })
+});
+
+const SHORTCUT_MAP = {};
+for (const group of Object.values(NOTE_GROUPS)){
+  SHORTCUT_MAP[group.modifier] = {};
+  group.codes.forEach((code, index) => { SHORTCUT_MAP[group.modifier][code] = group.noteIds[index]; });
+}
+
+function validateNoteGroups(){
+  const errors = [];
+  const expectedMidi = {
+    low:[60,62,64,65,67,69,71,72],
+    high:[72,74,76,77,79,81,83,84],
+    accidental:[61,63,66,68,70,73,75,78,80,82]
+  };
+  Object.entries(NOTE_GROUPS).forEach(([name, group]) => {
+    const expectedCount = name === "accidental" ? 10 : 8;
+    if (group.noteIds.length !== expectedCount) errors.push(`${name} 음 개수 오류`);
+    if (group.codes.length !== group.noteIds.length) errors.push(`${name} codes/noteIds 길이 불일치`);
+    const notes = group.noteIds.map(noteById);
+    if (notes.some(note => !note)) errors.push(`${name}에 존재하지 않는 음`);
+    if (name === "accidental" && group.noteIds.some(id => !id.includes("s"))) errors.push("반음 그룹에 온음 포함");
+    if (name !== "accidental" && group.noteIds.some(id => id.includes("s"))) errors.push(`${name}에 반음 포함`);
+    if (notes.filter(Boolean).map(note => note.midi).join(",") !== expectedMidi[name].join(",")) errors.push(`${name} MIDI 순서 오류`);
+  });
+  if (!NOTE_GROUPS.low.noteIds.includes("C5") || !NOTE_GROUPS.high.noteIds.includes("C5")) errors.push("C5 이중 분류 누락");
+  if (NOTE_GROUPS.high.noteIds.at(-1) !== "C6") errors.push("높은 계이름 마지막은 C6이어야 함");
+  if (errors.length) errors.forEach(error => console.error("❌ SHORTCUT:", error));
+  else console.log("✅ SHORTCUT OK: 26 mappings validated");
+  return errors.length === 0;
 }
 
 /* ===== ENGINE ===== */
@@ -699,10 +1166,116 @@ const ARIA_FINGER = {
   bbSide:"오른손 검지 옆면(사이드 B♭)", tr1:"오른손 검지 옆면(D 트릴키)", tr2:"오른손 검지 옆면(D♯ 트릴키)"
 };
 
-window.appState = { currentNote:null, altIndex:-1 };
+window.appState = {
+  mode:"learn",
+  noteId:null,
+  previousNoteId:null,
+  altIndex:-1,
+  selectorGroup:"low",
+  camera:"auto",
+  soundOn:true
+};
 const noteById = id => NOTES.find(n => n.id === id);
 const activeKeys = (note, altIndex) =>
   (altIndex >= 0 && note.alt[altIndex]) ? note.alt[altIndex].keys : note.keys;
+
+const VIEW_PRESETS = Object.freeze({
+  all:"0 0 1600 560",
+  left:"60 20 820 430",
+  right:"790 145 500 350",
+  foot:"1080 285 420 235",
+  hands:"500 135 780 410"
+});
+const KEY_GROUP = Object.freeze({
+  thumbBb:"thumb",thumbB:"thumb",L1:"left",L2:"left",L3:"left",gis:"pinky",
+  bbSide:"trill",tr1:"trill",tr2:"trill",R1:"right",R2:"right",R3:"right",
+  eb:"pinky",lowCis:"pinky",lowC:"pinky"
+});
+let changedState = { on:[], off:[], all:[] };
+let cameraAnimation = 0;
+
+function iconMarkup(id, className = ""){
+  return `<svg class="icon ${className}" aria-hidden="true"><use href="#icon-${id}"></use></svg>`;
+}
+
+function computeChangedKeys(previousNoteId, noteId, previousAlt = -1, nextAlt = -1){
+  const previous = noteById(previousNoteId);
+  const next = noteById(noteId);
+  if (!previous || !next) return { on:[], off:[], all:[] };
+  const before = new Set(activeKeys(previous, previousAlt));
+  const after = new Set(activeKeys(next, nextAlt));
+  const on = [...after].filter(key => !before.has(key));
+  const off = [...before].filter(key => !after.has(key));
+  return { on, off, all:[...on,...off] };
+}
+
+function deriveCameraPreset(keys){
+  if (!keys.length) return "all";
+  const foot = keys.filter(key => ["eb","lowCis","lowC"].includes(key)).length;
+  const left = keys.filter(key => ["thumbBb","thumbB","L1","L2","L3","gis"].includes(key)).length;
+  const right = keys.filter(key => ["R1","R2","R3","bbSide","tr1","tr2"].includes(key)).length;
+  if (foot) return "foot";
+  if (left > right) return "left";
+  if (right > left) return "right";
+  return "hands";
+}
+
+function animateViewBox(target, immediate = false){
+  const svg = document.getElementById("main-svg");
+  if (!svg) return;
+  cancelAnimationFrame(cameraAnimation);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const desktop = matchMedia("(min-width: 1024px)").matches;
+  const targetValue = VIEW_PRESETS[desktop ? "all" : target] || VIEW_PRESETS.all;
+  if (immediate || reduce || desktop){
+    svg.setAttribute("viewBox", targetValue);
+    return;
+  }
+  const from = svg.getAttribute("viewBox").trim().split(/\s+/).map(Number);
+  const to = targetValue.split(/\s+/).map(Number);
+  if (from.length !== 4 || from.some(Number.isNaN)){
+    svg.setAttribute("viewBox", targetValue);
+    return;
+  }
+  const started = performance.now();
+  const duration = 240;
+  const frame = now => {
+    const p = Math.min(1, (now - started) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    svg.setAttribute("viewBox", from.map((value,index) => value + (to[index] - value) * eased).join(" "));
+    if (p < 1) cameraAnimation = requestAnimationFrame(frame);
+  };
+  cameraAnimation = requestAnimationFrame(frame);
+}
+
+function syncCamera(immediate = false){
+  const actual = appState.camera === "auto" ? deriveCameraPreset(changedState.all) : appState.camera;
+  animateViewBox(actual, immediate);
+  document.querySelectorAll(".camera-button").forEach(button =>
+    button.setAttribute("aria-pressed", String(button.dataset.camera === appState.camera)));
+}
+
+function syncChangedClasses(){
+  document.querySelectorAll(".key.changed-on,.key.changed-off").forEach(el => el.classList.remove("changed-on","changed-off"));
+  changedState.on.forEach(key => document.getElementById(KEY_DOM[key])?.classList.add("changed-on"));
+  changedState.off.forEach(key => document.getElementById(KEY_DOM[key])?.classList.add("changed-off"));
+}
+
+function updateSvgDescription(note, keys){
+  const svg = document.getElementById("main-svg");
+  let title = svg.querySelector(":scope > title");
+  let desc = svg.querySelector(":scope > desc");
+  if (!title){
+    title = document.createElementNS("http://www.w3.org/2000/svg","title");
+    svg.prepend(title);
+  }
+  if (!desc){
+    desc = document.createElementNS("http://www.w3.org/2000/svg","desc");
+    title.after(desc);
+  }
+  title.textContent = `${note.ko} ${note.name} 플루트 운지`;
+  desc.textContent = `누르는 키 ${keys.length}개: ${keys.map(key => KEY_LABEL[key]).join(", ") || "없음"}`;
+}
 
 function applyFingering(noteId, altIndex = -1, opts = {}){
   const note = noteById(noteId);
@@ -747,7 +1320,7 @@ function applyFingering(noteId, altIndex = -1, opts = {}){
 
   // 5) 상태 저장 (퀴즈 silent 출제는 학습 상태를 건드리지 않음)
   if (!opts.silent){
-    appState.currentNote = noteId;
+    appState.noteId = noteId;
     appState.altIndex = altIndex;
   }
 
@@ -755,53 +1328,87 @@ function applyFingering(noteId, altIndex = -1, opts = {}){
   if (!opts.silent){
     renderNoteInfo(note, altIndex);
     updateSelectorActive(noteId);
-    updateAria(note, keys);
+    syncChangedClasses();
+    updateKeyOverview(note, keys);
+    updateSvgDescription(note, keys);
+    syncCamera();
+    if (opts.announce !== false) updateAria(note, keys, opts.announcementSuffix || "");
   }
 }
 
-function updateAria(note, keys){
+function updateAria(note, keys, suffix = ""){
   const el = document.getElementById("aria-status");
   const fingers = keys.map(k => ARIA_FINGER[k]).join(", ");
-  el.textContent = `${note.oct}옥타브 ${note.ko}(${note.name}). 누르는 손가락: ${fingers || "없음"}`;
+  el.textContent = `${note.oct}옥타브 ${note.ko}(${note.name}). 누르는 손가락: ${fingers || "없음"}${suffix}`;
 }
 
 function renderNoteInfo(note, altIndex){
   const box = document.getElementById("note-info");
   const altTabs = note.alt.length ? `
-    <div class="alt-tabs" role="tablist" aria-label="대체 운지 선택">
-      <button class="alt-tab${altIndex < 0 ? " on" : ""}" data-alt="-1">기본</button>
-      ${note.alt.map((a, i) => `<button class="alt-tab${altIndex === i ? " on" : ""}" data-alt="${i}">${a.name}</button>`).join("")}
+    <div class="alt-tabs" role="group" aria-label="대체 운지 선택">
+      <button class="alt-tab${altIndex < 0 ? " on" : ""}" aria-pressed="${altIndex < 0}" data-alt="-1">기본 운지</button>
+      ${note.alt.map((a, i) => `<button class="alt-tab${altIndex === i ? " on" : ""}" aria-pressed="${altIndex === i}" data-alt="${i}">${a.name}</button>`).join("")}
     </div>` : "";
   const altDesc = (altIndex >= 0 && note.alt[altIndex])
     ? `<div class="alt-desc">지금 보는 운지: <b>${note.alt[altIndex].name}</b></div>` : "";
+  const noteIndex = NOTES.indexOf(note);
+  const keys = activeKeys(note, altIndex);
   box.innerHTML = `
     <div class="ni-main">
-      <div class="ni-name">${note.name}</div>
-      <div class="ni-ko">${note.oct}옥타브 · ${note.ko}</div>
-      ${altTabs}${altDesc}
+      <div class="ni-title-row"><div class="ni-name">${note.ko}</div><div class="ni-count">${note.name} · ${keys.length}키</div></div>
+      <div class="ni-ko">${note.oct}옥타브 · ${note.id.includes("s") ? "반음" : "온음"}</div>
+      ${note.tip ? `<details class="tip-disclosure"><summary>${note.tip}</summary><p>${note.tip}</p></details>` : ""}
     </div>
-    ${note.tip ? `<div class="tip-bubble">${note.tip}</div>` : ""}
-    <div class="legend">
-      <span><span class="dot" style="background:var(--c-thumb)"></span>엄지</span>
-      <span><span class="dot" style="background:var(--c-left)"></span>왼손</span>
-      <span><span class="dot" style="background:var(--c-right)"></span>오른손</span>
-      <span><span class="dot" style="background:var(--c-trill)"></span>트릴·사이드(검지 옆면)</span>
-      <span><span class="dot" style="background:var(--c-pinky)"></span>새끼 특수키</span>
-    </div>`;
+    <div class="summary-actions">
+      <button class="icon-button" data-summary-action="previous" ${noteIndex === 0 ? "disabled" : ""} aria-label="이전 반음">${iconMarkup("chevron-left")}</button>
+      <button class="icon-button" id="autoplay-btn" data-summary-action="autoplay" aria-pressed="${autoplay.playing}" aria-label="${autoplay.playing ? "자동 재생 일시정지" : "도레미 자동 재생"}">${iconMarkup(autoplay.playing ? "pause" : "play")}</button>
+      <button class="icon-button" data-summary-action="next" ${noteIndex === NOTES.length - 1 ? "disabled" : ""} aria-label="다음 반음">${iconMarkup("chevron-right")}</button>
+      <button class="icon-button" data-summary-action="share" aria-label="현재 음 공유">${iconMarkup("share")}</button>
+    </div>
+    ${altTabs}${altDesc}`;
   box.querySelectorAll(".alt-tab").forEach(btn =>
-    btn.addEventListener("click", () => applyFingering(note.id, parseInt(btn.dataset.alt, 10))));
+    btn.addEventListener("click", () => selectNote(note.id, {source:"tap", altIndex:parseInt(btn.dataset.alt, 10)})));
+}
+
+function updateKeyOverview(note, keys){
+  const active = new Set(keys);
+  const map = document.getElementById("key-overview-map");
+  const shapes = MINI_LAYOUT.map(item => {
+    const classes = ["mini-key"];
+    if (active.has(item.k)) classes.push("pressed");
+    if (changedState.on.includes(item.k)) classes.push("changed-on");
+    if (changedState.off.includes(item.k)) classes.push("changed-off");
+    const attrs = `class="${classes.join(" ")}" data-key="${item.k}" data-group="${KEY_GROUP[item.k]}"`;
+    return item.shape === "c"
+      ? `<circle ${attrs} cx="${item.x}" cy="${item.y}" r="${item.r}"/>`
+      : `<ellipse ${attrs} cx="${item.x}" cy="${item.y}" rx="${item.rx}" ry="${item.ry}"/>`;
+  }).join("");
+  map.innerHTML = `<svg viewBox="0 0 200 66" role="img" aria-label="${note.ko} ${note.name}, 15키 중 ${keys.length}개 누름">
+    <line x1="8" y1="40" x2="196" y2="40" stroke="#d6e1e7" stroke-width="2" stroke-linecap="round"/>
+    <line x1="38" y1="28" x2="38" y2="52" stroke="#d6e1e7" stroke-width="1.5"/>
+    ${shapes}
+  </svg>`;
+  document.getElementById("key-overview-count").textContent = `15키 중 ${keys.length}개 누름`;
+  const onText = changedState.on.map(key => ARIA_FINGER[key]).join(", ");
+  const offText = changedState.off.map(key => ARIA_FINGER[key]).join(", ");
+  document.getElementById("change-summary").innerHTML = changedState.all.length
+    ? `${onText ? `<span class="change-on">＋ ${onText}</span>` : ""}${onText && offText ? "<br>" : ""}${offText ? `<span class="change-off">− ${offText}</span>` : ""}`
+    : "이전 음과 비교할 변화가 없어요";
 }
 
 /* 개발용: 함정 노트 8종 pressed 키 목록 확인 (배포 전 콘솔에서만 사용) */
 function debugCheck(){
-  const before = { note: appState.currentNote, alt: appState.altIndex };
+  const before = { note: appState.noteId, alt:appState.altIndex, previous:appState.previousNoteId };
   const rows = ["D4","D5","D6","C5","G6","As6","B6","C7"].map(id => {
-    applyFingering(id);
+    applyFingering(id, -1, {announce:false});
     const pressed = [...document.querySelectorAll(".key.pressed")].map(el => el.id).sort().join(", ");
     return { note:id, pressed };
   });
   console.table(rows);
-  if (before.note) applyFingering(before.note, before.alt);
+  if (before.note){
+    appState.previousNoteId = before.previous;
+    applyFingering(before.note, before.alt, {announce:false});
+  }
   return rows;
 }
 window.debugCheck = debugCheck;
@@ -822,6 +1429,35 @@ function renderDebugLayer(){
 /* ===== UI ===== */
 const OCT_TITLES = { 1:"1옥타브 (낮은 음)", 2:"2옥타브 (가운데 음)", 3:"3옥타브 (높은 음)" };
 
+function shortcutsForNote(noteId){
+  const result = [];
+  Object.values(NOTE_GROUPS).forEach(group => group.noteIds.forEach((id,index) => {
+    if (id === noteId){
+      result.push({
+        modifier:group.modifier,
+        label:`${group.shortcutLabel}+${group.codes[index].replace("Digit","")}`,
+        row:group.modifier
+      });
+    }
+  }));
+  return result;
+}
+
+function shortcutBadges(noteId){
+  const entries = shortcutsForNote(noteId);
+  if (!entries.length) return "";
+  return `<span class="kbd-badges" aria-hidden="true">${entries.map(entry =>
+    `<span class="kbd-badge ${entry.modifier}">${entry.label}</span>`).join("")}</span>`;
+}
+
+function noteButtonMarkup(note, extraClass = ""){
+  const black = note.id.includes("s");
+  return `<span class="nb-ko">${note.ko.includes("/") ? note.ko.replace("/","/<br>") : note.ko}</span>
+    <span class="nb-en">${note.name}</span>
+    ${note.tip ? '<span class="info-dot" aria-hidden="true"></span>' : ""}
+    ${shortcutBadges(note.id)}`;
+}
+
 function buildSelector(){
   const wrap = document.getElementById("note-selector");
   wrap.innerHTML = "";
@@ -839,102 +1475,310 @@ function buildSelector(){
       btn.className = "note-btn " + (black ? "black" : "white");
       btn.dataset.note = n.id;
       btn.setAttribute("aria-label", `${n.oct}옥타브 ${n.ko}, ${n.name}`);
-      btn.innerHTML = `<span class="nb-ko">${n.ko}</span><span class="nb-en">${n.name}</span>` +
-                      (n.tip ? `<span class="tip-badge" aria-hidden="true">💡</span>` : "");
-      btn.addEventListener("click", () => selectNote(n.id));
+      btn.innerHTML = noteButtonMarkup(n);
+      btn.addEventListener("click", () => {
+        selectNote(n.id, {source:"tap"});
+        closeSheet("all-notes-overlay");
+      });
       grid.appendChild(btn);
     });
     sec.appendChild(grid);
     wrap.appendChild(sec);
   });
+  buildGroupSelector();
+  buildKeyboardGuide();
+}
+
+function buildGroupSelector(){
+  const tabs = document.getElementById("selector-tabs");
+  tabs.innerHTML = Object.entries(NOTE_GROUPS).map(([name,group]) =>
+    `<button id="selector-tab-${name}" class="selector-tab" role="tab" data-group="${name}" aria-selected="${appState.selectorGroup === name}" tabindex="${appState.selectorGroup === name ? "0" : "-1"}" aria-controls="selector-grid">${group.label}</button>`).join("");
+  tabs.querySelectorAll(".selector-tab").forEach(button => button.addEventListener("click", () => {
+    appState.selectorGroup = button.dataset.group;
+    saveProgress();
+    renderGroupSelector();
+  }));
+  tabs.addEventListener("keydown", event => {
+    if (!["ArrowLeft","ArrowRight"].includes(event.key)) return;
+    const items = [...tabs.querySelectorAll(".selector-tab")];
+    const current = items.indexOf(document.activeElement);
+    if (current < 0) return;
+    event.preventDefault();
+    const next = (current + (event.key === "ArrowRight" ? 1 : -1) + items.length) % items.length;
+    items[next].focus();
+    items[next].click();
+  });
+  renderGroupSelector();
+}
+
+function renderGroupSelector(){
+  const groupName = NOTE_GROUPS[appState.selectorGroup] ? appState.selectorGroup : "low";
+  const group = NOTE_GROUPS[groupName];
+  const grid = document.getElementById("selector-grid");
+  grid.dataset.group = groupName;
+  grid.setAttribute("aria-labelledby",`selector-tab-${groupName}`);
+  grid.innerHTML = group.noteIds.map((id,index) => {
+    const note = noteById(id);
+    const black = note.id.includes("s");
+    let spoken = note.ko;
+    if (groupName === "low" && index === 0) spoken = `낮은 ${note.ko}`;
+    if (groupName === "low" && index === 7) spoken = `높은 ${note.ko}`;
+    if (groupName === "high" && index === 0) spoken = `높은 ${note.ko}`;
+    if (groupName === "high" && index === 7) spoken = `더 높은 ${note.ko}`;
+    return `<button class="group-note-btn ${black ? "black" : ""}" data-note="${id}" aria-label="${spoken}, ${note.name}">
+      ${noteButtonMarkup(note)}
+    </button>`;
+  }).join("");
+  grid.querySelectorAll(".group-note-btn").forEach(button => button.addEventListener("click", () => {
+    if (document.body.dataset.mode === "speed") handleSpeedAnswer(button.dataset.note, "tap");
+    else selectNote(button.dataset.note, {source:"tap"});
+  }));
+  document.querySelectorAll(".selector-tab").forEach(button => {
+    const selected = button.dataset.group === groupName;
+    button.setAttribute("aria-selected", String(selected));
+    button.tabIndex = selected ? 0 : -1;
+  });
+  document.getElementById("selector-description").textContent = group.desc;
+  updateSelectorActive(appState.noteId);
+}
+
+function buildKeyboardGuide(){
+  const target = document.getElementById("kbd-guide-body");
+  target.innerHTML = Object.values(NOTE_GROUPS).map(group => `
+    <div class="kbd-guide-row" data-shortcut-row="${group.modifier}">
+      <b>${group.shortcutLabel} · ${group.label}</b>
+      <span>${group.codes.map(code => `<kbd>${code.replace("Digit","")}</kbd>`).join("")}</span>
+    </div>`).join("") + `
+    <div class="kbd-guide-note">←/→ 반음 · ↑/↓ 옥타브</div>
+    <div class="kbd-guide-note">숫자는 키보드 위쪽 줄, Ctrl·Alt는 왼쪽 키를 쓰세요. 일부 브라우저가 단축키를 가로채면 버튼이나 화살표를 이용하세요.</div>`;
 }
 
 function updateSelectorActive(noteId){
-  document.querySelectorAll(".note-btn").forEach(b =>
+  document.querySelectorAll(".note-btn,.group-note-btn").forEach(b =>
     b.classList.toggle("active", b.dataset.note === noteId));
 }
 
-function selectNote(noteId, altIndex = -1){
-  applyFingering(noteId, altIndex);
-  if (typeof playNoteById === "function") playNoteById(noteId);
+function syncSelectorGroupForNote(noteId, source){
+  const groups = Object.entries(NOTE_GROUPS).filter(([,group]) => group.noteIds.includes(noteId)).map(([name]) => name);
+  if (groups.length === 1 && source !== "tap") appState.selectorGroup = groups[0];
+  if (groups.length === 1 && !NOTE_GROUPS[appState.selectorGroup]?.noteIds.includes(noteId)) appState.selectorGroup = groups[0];
+  renderGroupSelector();
 }
 
-/* 키보드: ←/→ 반음, ↑/↓ 옥타브 */
+function updateUrl(){
+  const params = new URLSearchParams();
+  params.set("note", appState.noteId || "C4");
+  params.set("mode", appState.mode);
+  params.set("group", appState.selectorGroup);
+  history.replaceState(null, "", `${location.pathname}?${params.toString()}${location.hash}`);
+}
+
+function selectNote(noteId, optsOrAltIndex = {}){
+  const note = noteById(noteId);
+  if (!note) return false;
+  const opts = typeof optsOrAltIndex === "number" ? {altIndex:optsOrAltIndex} : (optsOrAltIndex || {});
+  const source = opts.source || "tap";
+  const previousId = appState.noteId;
+  const previousAlt = appState.altIndex;
+  const changingNote = previousId !== noteId;
+  const altIndex = Number.isInteger(opts.altIndex) ? opts.altIndex : (changingNote ? -1 : appState.altIndex);
+  if (autoplay.playing && source !== "autoplay") stopAutoplay();
+  appState.previousNoteId = changingNote ? previousId : appState.previousNoteId;
+  changedState = computeChangedKeys(changingNote ? previousId : noteId, noteId, previousAlt, altIndex);
+  applyFingering(noteId, altIndex, {announce:opts.announce !== false,announcementSuffix:opts.announcementSuffix || ""});
+  syncSelectorGroupForNote(noteId, source);
+  if (opts.playSound !== false && typeof playNoteById === "function"){
+    playNoteById(noteId, opts.duration, {kind:source === "autoplay" ? "autoplay" : "preview", token:autoplay.token});
+  }
+  if (opts.updateUrl !== false) updateUrl();
+  if (progressState){
+    progressState.lastNoteId = noteId;
+    progressState.selectorGroup = appState.selectorGroup;
+    saveProgress();
+  }
+  return true;
+}
+
+function flashShortcut(modifier, noteId){
+  document.querySelectorAll(`.group-note-btn[data-note="${noteId}"] .kbd-badge.${modifier},.note-btn[data-note="${noteId}"] .kbd-badge.${modifier}`)
+    .forEach(badge => {
+      badge.classList.remove("kbd-flash");
+      requestAnimationFrame(() => badge.classList.add("kbd-flash"));
+    });
+  const row = document.querySelector(`[data-shortcut-row="${modifier}"]`);
+  if (row){
+    row.classList.add("row-flash");
+    setTimeout(() => row.classList.remove("row-flash"), 300);
+  }
+}
+
+function hasOpenOverlay(){
+  return [...document.querySelectorAll(".sheet-overlay")].some(overlay => !overlay.hidden) ||
+    !document.getElementById("help-overlay").hidden;
+}
+
+/* 키보드: 26개 단축키 + ←/→ 반음, ↑/↓ 옥타브 */
 document.addEventListener("keydown", e => {
-  if (document.body.dataset.mode !== "learn") return;
-  if (e.target.matches("input,select,textarea")) return;
-  const overlay = document.getElementById("help-overlay");
-  if (overlay && !overlay.hidden) return;
-  const cur = noteById(appState.currentNote);
+  const mode = document.body.dataset.mode;
+  if (!["learn","speed"].includes(mode)) return;
+  if (e.target instanceof Element && (e.target.matches("input,select,textarea") || e.target.isContentEditable)) return;
+  if (hasOpenOverlay() || e.isComposing || e.keyCode === 229) return;
+  const mod = (e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) ? "ctrl"
+            : (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) ? "shift"
+            : (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) ? "alt" : null;
+  const shortcutNote = mod && SHORTCUT_MAP[mod]?.[e.code];
+  if (shortcutNote){
+    e.preventDefault();
+    if (!e.repeat){
+      if (mode === "speed") handleSpeedAnswer(shortcutNote, `${mod}+${e.code.replace("Digit","")}`);
+      else selectNote(shortcutNote, {
+        source:"shortcut",
+        announcementSuffix:` — 단축키 ${NOTE_GROUPS[mod === "ctrl" ? "low" : mod === "shift" ? "high" : "accidental"].shortcutLabel}+${e.code.replace("Digit","")}`
+      });
+      flashShortcut(mod, shortcutNote);
+    }
+    return;
+  }
+  if (mode !== "learn" || e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+  const cur = noteById(appState.noteId);
   if (!cur) return;
   let target = null;
   if (e.key === "ArrowRight") target = NOTES.find(n => n.midi === cur.midi + 1);
   else if (e.key === "ArrowLeft") target = NOTES.find(n => n.midi === cur.midi - 1);
   else if (e.key === "ArrowUp") target = NOTES.find(n => n.midi === cur.midi + 12);
   else if (e.key === "ArrowDown") target = NOTES.find(n => n.midi === cur.midi - 12);
-  if (target){ e.preventDefault(); selectNote(target.id); }
+  if (target){ e.preventDefault(); selectNote(target.id, {source:"arrow"}); }
 });
+
+window.debugShortcuts = async function debugShortcuts(){
+  for (const group of Object.values(NOTE_GROUPS)){
+    for (let index = 0; index < group.noteIds.length; index++){
+      selectNote(group.noteIds[index], {source:"shortcut", updateUrl:false});
+      flashShortcut(group.modifier, group.noteIds[index]);
+      await new Promise(resolve => setTimeout(resolve, 60));
+    }
+  }
+  return 26;
+};
 /* ===== AUDIO ===== */
 let audioCtx = null;
-let soundOn = true;
+let progressState = null;
 
 function ensureAudio(){
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === "suspended") audioCtx.resume();
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => showToast("화면을 한 번 눌러 소리를 켜세요"));
   return audioCtx;
 }
 
+const VoiceManager = {
+  voices:new Set(),
+  maxVoices:3,
+  stopVoice(voice, fast = false){
+    if (!voice || voice.released) return;
+    voice.released = true;
+    const now = voice.ctx.currentTime;
+    try {
+      voice.env.gain.cancelScheduledValues(now);
+      voice.env.gain.setTargetAtTime(0, now, fast ? .025 : .07);
+    } catch(e){}
+    voice.sources.forEach(source => {
+      try { source.stop(now + (fast ? .1 : .28)); } catch(e){}
+    });
+  },
+  stopKind(kind){
+    [...this.voices].filter(voice => voice.kind === kind).forEach(voice => this.stopVoice(voice, true));
+  },
+  stopAll(){
+    [...this.voices].forEach(voice => this.stopVoice(voice, true));
+  },
+  add(voice){
+    if (voice.kind === "preview") this.stopKind("preview");
+    while (this.voices.size >= this.maxVoices){
+      const oldest = this.voices.values().next().value;
+      this.stopVoice(oldest, true);
+      this.voices.delete(oldest);
+    }
+    this.voices.add(voice);
+  }
+};
+
 // 플루트 톤 합성: 사인 기본음 + 2·3배음 + 숨(breath) 노이즈 어택, ADSR 엔벨로프
-function playNote(midi, durationSec = 1.2){
-  if (!soundOn) return;
-  const ctx = ensureAudio();
-  const t0 = ctx.currentTime + 0.01;
-  const freq = 440 * Math.pow(2, (midi - 69) / 12);
-
-  const env = ctx.createGain();
-  env.gain.setValueAtTime(0, t0);
-  env.gain.setTargetAtTime(1.0, t0, 0.02);              // attack ~0.06s
-  env.gain.setTargetAtTime(0.7, t0 + 0.06, 0.04);       // decay → sustain 0.7
-  const tRel = t0 + Math.max(0.12, durationSec - 0.35);
-  env.gain.setTargetAtTime(0, tRel, 0.12);              // release ~0.35s (클릭 방지)
-
-  const lp = ctx.createBiquadFilter();
-  lp.type = "lowpass"; lp.frequency.value = 4000;
-  env.connect(lp); lp.connect(ctx.destination);
-
-  const stopAt = t0 + durationSec + 1.0;
-  [[1, .22], [2, .062], [3, .026]].forEach(([mult, g]) => {
-    const osc = ctx.createOscillator();
-    osc.type = "sine"; osc.frequency.value = freq * mult;
-    const og = ctx.createGain(); og.gain.value = g;
-    osc.connect(og); og.connect(env);
-    osc.start(t0); osc.stop(stopAt);
-  });
-
-  // 입김 어택: 화이트노이즈 0.08초 → bandpass(중심 f*2, Q1.5)
-  const nBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.08), ctx.sampleRate);
-  const ch = nBuf.getChannelData(0);
-  for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
-  const noise = ctx.createBufferSource(); noise.buffer = nBuf;
-  const bp = ctx.createBiquadFilter();
-  bp.type = "bandpass"; bp.frequency.value = Math.min(freq * 2, 8000); bp.Q.value = 1.5;
-  const ng = ctx.createGain();
-  ng.gain.setValueAtTime(0.0001, t0);
-  ng.gain.setTargetAtTime(0.15, t0, 0.01);
-  ng.gain.setTargetAtTime(0, t0 + 0.05, 0.02);
-  noise.connect(bp); bp.connect(ng); ng.connect(lp);
-  noise.start(t0); noise.stop(t0 + 0.12);
+function playNote(midi, durationSec = 1.2, meta = {}){
+  if (!appState.soundOn) return null;
+  try {
+    const ctx = ensureAudio();
+    const t0 = ctx.currentTime + .01;
+    const freq = 440 * Math.pow(2, (midi - 69) / 12);
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0, t0);
+    env.gain.setTargetAtTime(1, t0, .02);
+    env.gain.setTargetAtTime(.7, t0 + .06, .04);
+    env.gain.setTargetAtTime(0, t0 + Math.max(.12, durationSec - .35), .12);
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 4000;
+    env.connect(lp);
+    lp.connect(ctx.destination);
+    const voice = {ctx,env,kind:meta.kind || "preview",token:meta.token || 0,sources:[],released:false,ended:0};
+    const cleanup = () => {
+      voice.ended++;
+      if (voice.ended >= voice.sources.length){
+        VoiceManager.voices.delete(voice);
+        try { env.disconnect(); lp.disconnect(); } catch(e){}
+        voice.sources.length = 0;
+      }
+    };
+    const stopAt = t0 + durationSec + .8;
+    [[1,.22],[2,.062],[3,.026]].forEach(([mult,gainValue]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq * mult;
+      gain.gain.value = gainValue;
+      osc.connect(gain);
+      gain.connect(env);
+      osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch(e){} cleanup(); };
+      voice.sources.push(osc);
+      osc.start(t0);
+      osc.stop(stopAt);
+    });
+    const nBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * .08), ctx.sampleRate);
+    const channel = nBuf.getChannelData(0);
+    for (let i = 0; i < channel.length; i++) channel[i] = Math.random() * 2 - 1;
+    const noise = ctx.createBufferSource();
+    noise.buffer = nBuf;
+    const bp = ctx.createBiquadFilter();
+    const noiseGain = ctx.createGain();
+    bp.type = "bandpass";
+    bp.frequency.value = Math.min(freq * 2, 8000);
+    bp.Q.value = 1.5;
+    noiseGain.gain.setValueAtTime(.0001, t0);
+    noiseGain.gain.setTargetAtTime(.15, t0, .01);
+    noiseGain.gain.setTargetAtTime(0, t0 + .05, .02);
+    noise.connect(bp);
+    bp.connect(noiseGain);
+    noiseGain.connect(lp);
+    noise.onended = () => { try { noise.disconnect(); bp.disconnect(); noiseGain.disconnect(); } catch(e){} cleanup(); };
+    voice.sources.push(noise);
+    noise.start(t0);
+    noise.stop(t0 + .12);
+    VoiceManager.add(voice);
+    return voice;
+  } catch(error){
+    showToast("화면을 한 번 눌러 소리를 켜세요");
+    return null;
+  }
 }
-function playNoteById(id, dur){
+function playNoteById(id, dur, meta = {}){
   const n = noteById(id);
-  if (n) playNote(n.midi, dur);
+  return n ? playNote(n.midi, dur, meta) : null;
 }
 
 /* ----- 자동 재생 (도레미… 스케일) ----- */
-const autoplay = { playing:false, timer:null, queue:[], idx:0, nextAt:0 };
+const autoplay = { playing:false, timer:null, queue:[], idx:0, nextAt:0, token:0 };
 
 function buildScaleQueue(){
-  const cur = noteById(appState.currentNote) || NOTES[0];
+  const cur = noteById(appState.noteId) || NOTES[0];
   const whites = NOTES.filter(n => n.oct === cur.oct && !n.id.includes("s")).map(n => n.id);
   const octaveUpC = NOTES.find(n => n.midi === noteById(whites[0]).midi + 12);
   if (octaveUpC) whites.push(octaveUpC.id);
@@ -946,41 +1790,135 @@ function autoplayStep(){
   const bpm = parseInt(document.getElementById("autoplay-bpm").value, 10);
   const beatMs = 60000 / bpm;
   const id = autoplay.queue[autoplay.idx++];
-  applyFingering(id, -1);
-  playNoteById(id, (60 / bpm) * 0.9);   // 박자 길이의 90% — 음 겹침 방지
+  selectNote(id, {source:"autoplay", updateUrl:false, duration:(60 / bpm) * .9, announce:false});
   autoplay.nextAt += beatMs;            // 예약 시점 기반 (드리프트 방지)
-  autoplay.timer = setTimeout(autoplayStep, Math.max(0, autoplay.nextAt - performance.now()));
+  const token = autoplay.token;
+  autoplay.timer = setTimeout(() => {
+    if (autoplay.playing && token === autoplay.token) autoplayStep();
+  }, Math.max(0, autoplay.nextAt - performance.now()));
 }
 function startAutoplay(){
-  ensureAudio();
+  try { ensureAudio(); }
+  catch(error){ showToast("이 기기에서는 소리를 시작할 수 없어요"); return; }
+  stopAutoplay();
   autoplay.queue = buildScaleQueue();
   autoplay.idx = 0;
   autoplay.playing = true;
+  autoplay.token++;
   autoplay.nextAt = performance.now();
-  document.getElementById("autoplay-btn").textContent = "⏸ 일시정지";
-  document.getElementById("autoplay-btn").classList.add("playing");
+  syncAutoplayButton();
   autoplayStep();
 }
 function stopAutoplay(){
   autoplay.playing = false;
   clearTimeout(autoplay.timer);
-  const btn = document.getElementById("autoplay-btn");
-  btn.textContent = "▶ 도레미 자동 재생";
-  btn.classList.remove("playing");
+  autoplay.timer = null;
+  autoplay.token++;
+  VoiceManager.stopKind("autoplay");
+  syncAutoplayButton();
+}
+function syncAutoplayButton(){
+  const button = document.getElementById("autoplay-btn");
+  if (!button) return;
+  button.setAttribute("aria-pressed", String(autoplay.playing));
+  button.setAttribute("aria-label", autoplay.playing ? "자동 재생 일시정지" : "도레미 자동 재생");
+  button.innerHTML = iconMarkup(autoplay.playing ? "pause" : "play");
 }
 function initAudioUI(){
   document.getElementById("sound-toggle").addEventListener("click", e => {
-    soundOn = !soundOn;
-    if (soundOn) ensureAudio();
-    e.currentTarget.setAttribute("aria-pressed", String(soundOn));
-    e.currentTarget.textContent = soundOn ? "🔊 소리" : "🔇 소리";
+    appState.soundOn = !appState.soundOn;
+    if (appState.soundOn){
+      try { ensureAudio(); }
+      catch(error){ appState.soundOn = false; showToast("이 기기에서는 소리를 시작할 수 없어요"); }
+    }
+    else VoiceManager.stopAll();
+    syncSoundButton();
+    if (progressState){
+      progressState.soundOn = appState.soundOn;
+      saveProgress();
+    }
   });
-  document.getElementById("autoplay-btn").addEventListener("click", () =>
-    autoplay.playing ? stopAutoplay() : startAutoplay());
+  document.getElementById("note-info").addEventListener("click", event => {
+    const action = event.target.closest("[data-summary-action]")?.dataset.summaryAction;
+    if (!action) return;
+    const currentIndex = NOTES.findIndex(note => note.id === appState.noteId);
+    if (action === "previous" && currentIndex > 0) selectNote(NOTES[currentIndex - 1].id, {source:"prevnext"});
+    if (action === "next" && currentIndex < NOTES.length - 1) selectNote(NOTES[currentIndex + 1].id, {source:"prevnext"});
+    if (action === "autoplay") autoplay.playing ? stopAutoplay() : startAutoplay();
+    if (action === "share") shareCurrentNote();
+  });
+}
+function syncSoundButton(){
+  const button = document.getElementById("sound-toggle");
+  button.setAttribute("aria-pressed", String(appState.soundOn));
+  button.setAttribute("aria-label", appState.soundOn ? "소리 끄기" : "소리 켜기");
+  button.setAttribute("title", appState.soundOn ? "소리 끄기" : "소리 켜기");
+  button.innerHTML = iconMarkup(appState.soundOn ? "speaker" : "volume-x");
 }
 /* ===== QUIZ & HELP (STEP 6) ===== */
-const quiz = { type:0, qNum:0, score:0, current:null, lastId:null, answering:false };
+const quiz = {
+  type:0,qNum:0,score:0,current:null,recent:[],answering:false,timer:null,
+  queue:null,daily:false,missed:new Set(),questionStartedAt:0
+};
+const speed = {
+  queue:[],index:0,score:0,totalResponseMs:0,answering:false,timer:null,startedAt:0,results:[]
+};
+const practiceSelectedKeys = new Set();
 const QUIZ_TOTAL = 10;
+
+function createProgressState(){
+  return {version:2,soundOn:true,lastNoteId:"C4",selectorGroup:"low",notes:{},best:{quiz1:0,build:0,speed:null}};
+}
+function loadProgress(){
+  let state = createProgressState();
+  try {
+    const saved = JSON.parse(localStorage.getItem("fluteEdu.v2") || "null");
+    if (saved?.version === 2) state = {...state,...saved,notes:saved.notes || {},best:{...state.best,...(saved.best || {})}};
+    const legacyQuiz = parseInt(localStorage.getItem("fluteQuizBest1") || "0",10);
+    const legacyBuild = parseInt(localStorage.getItem("fluteQuizBest2") || "0",10);
+    state.best.quiz1 = Math.max(state.best.quiz1 || 0, legacyQuiz || 0);
+    state.best.build = Math.max(state.best.build || 0, legacyBuild || 0);
+  } catch(e){}
+  progressState = state;
+  appState.soundOn = state.soundOn !== false;
+  appState.selectorGroup = NOTE_GROUPS[state.selectorGroup] ? state.selectorGroup : "low";
+  return state;
+}
+function saveProgress(){
+  if (!progressState) return;
+  progressState.soundOn = appState.soundOn;
+  progressState.lastNoteId = appState.noteId || progressState.lastNoteId || "C4";
+  progressState.selectorGroup = appState.selectorGroup;
+  try { localStorage.setItem("fluteEdu.v2", JSON.stringify(progressState)); } catch(e){}
+  renderProgressSummary();
+}
+function recordProgress(noteId, correct, responseMs = 0, hinted = false){
+  if (!progressState || !noteById(noteId)) return;
+  const previous = progressState.notes[noteId] || {attempts:0,correct:0,streak:0,avgResponseMs:0,mastery:0,lastSeen:null};
+  const attempts = previous.attempts + 1;
+  const average = responseMs > 0
+    ? Math.round(((previous.avgResponseMs || 0) * previous.attempts + responseMs) / attempts)
+    : previous.avgResponseMs || 0;
+  let delta = correct ? ((hinted || responseMs > 4000) ? 1 : 2) : -1;
+  progressState.notes[noteId] = {
+    attempts,
+    correct:previous.correct + (correct ? 1 : 0),
+    streak:correct ? previous.streak + 1 : 0,
+    avgResponseMs:average,
+    mastery:Math.max(0,Math.min(5,(previous.mastery || 0) + delta)),
+    lastSeen:new Date().toISOString()
+  };
+  saveProgress();
+}
+function renderProgressSummary(){
+  const target = document.getElementById("progress-summary");
+  if (!target || !progressState) return;
+  const practiced = Object.keys(progressState.notes).length;
+  const mastered = Object.values(progressState.notes).filter(stat => stat.mastery >= 4).length;
+  target.innerHTML = `<div class="sheet-row"><div><b>학습 진도</b><small>${practiced}음 연습 · ${mastered}음 익숙함</small></div><strong>${mastered} / 37</strong></div>
+    <div class="mastery-list">${Object.entries(progressState.notes).sort((a,b) => a[1].mastery - b[1].mastery).slice(0,5).map(([id,stat]) =>
+      `<div class="mastery-row"><span>${noteById(id).ko} ${id}</span><span class="mastery-track"><span style="--mastery:${stat.mastery}"></span></span><b>${stat.mastery}/5</b></div>`).join("")}</div>`;
+}
 
 function quizPool(){
   const range = document.getElementById("quiz-range").value;
@@ -988,67 +1926,124 @@ function quizPool(){
   return NOTES.filter(n => octs.includes(n.oct));
 }
 function resetKeyStates(){
-  document.querySelectorAll(".key").forEach(el => el.classList.remove("pressed","grade-ok","grade-wrong","grade-miss"));
+  document.querySelectorAll(".key").forEach(el => el.classList.remove("pressed","grade-ok","grade-wrong","grade-miss","changed-on","changed-off"));
   document.querySelectorAll(".finger").forEach(el => el.classList.remove("pressed"));
   document.getElementById("finger-r1").classList.remove("side-hint");
   document.getElementById("side-hint-note").classList.remove("show");
   document.getElementById("finger-r4").classList.remove("reach-cis","reach-c");
   document.getElementById("finger-l-thumb").classList.remove("reach-bb");
 }
+function clearQuizTimer(){
+  clearTimeout(quiz.timer);
+  quiz.timer = null;
+}
+function stopSpeed(){
+  clearTimeout(speed.timer);
+  speed.timer = null;
+  speed.answering = false;
+}
 function setMode(mode){
+  if (!["learn","quiz1","quiz2","speed"].includes(mode)) mode = "learn";
   stopAutoplay();
+  clearQuizTimer();
+  stopSpeed();
+  VoiceManager.stopKind("preview");
+  quiz.answering = false;
+  appState.mode = mode;
   document.body.dataset.mode = mode;
   ["learn","quiz1","quiz2"].forEach(m =>
-    document.getElementById("mode-" + (m === "learn" ? "learn" : m)).classList.toggle("mode-active", m === mode));
+    {
+      const active = m === mode || (m === "quiz1" && mode === "speed");
+      const button = document.getElementById("mode-" + m);
+      button.classList.toggle("mode-active", active);
+      if (active) button.setAttribute("aria-current","page");
+      else button.removeAttribute("aria-current");
+    });
   document.getElementById("quiz-panel").hidden = (mode === "learn");
+  document.getElementById("quiz-kind-standard").setAttribute("aria-pressed", String(mode !== "speed"));
+  document.getElementById("quiz-kind-speed").setAttribute("aria-pressed", String(mode === "speed"));
   resetKeyStates();
+  practiceSelectedKeys.clear();
   if (mode === "learn"){
-    applyFingering(appState.currentNote || "C4", appState.altIndex);
-  } else {
-    startQuiz(mode === "quiz1" ? 1 : 2);
-  }
+    changedState = {on:[],off:[],all:[]};
+    applyFingering(appState.noteId || "C4", appState.altIndex, {announce:false});
+  } else if (mode === "quiz1") startQuiz(1);
+  else if (mode === "quiz2") startQuiz(2);
+  else startSpeed();
+  updateUrl();
 }
 function updateQuizHead(){
   document.getElementById("quiz-score").textContent = `${quiz.score} / ${QUIZ_TOTAL}`;
   document.getElementById("quiz-progress-fill").style.setProperty("--qp", `${(quiz.qNum / QUIZ_TOTAL) * 100}%`);
 }
-function startQuiz(type){
-  quiz.type = type; quiz.qNum = 0; quiz.score = 0; quiz.lastId = null;
+function startQuiz(type, options = {}){
+  clearQuizTimer();
+  quiz.type = type;
+  quiz.qNum = 0;
+  quiz.score = 0;
+  quiz.recent = [];
+  quiz.queue = options.queue ? [...options.queue] : null;
+  quiz.daily = !!options.daily;
+  quiz.missed = new Set();
+  quiz.answering = false;
   updateQuizHead();
   nextQuestion();
 }
 function pickQuestion(){
-  const pool = quizPool().filter(n => n.id !== quiz.lastId);
+  if (quiz.queue?.length) return noteById(quiz.queue.shift());
+  const pool = quizPool().filter(n => !quiz.recent.includes(n.id));
   const q = pool[Math.floor(Math.random() * pool.length)];
-  quiz.lastId = q.id;
+  quiz.recent.push(q.id);
+  if (quiz.recent.length > 3) quiz.recent.shift();
   return q;
 }
 function nextQuestion(){
+  clearQuizTimer();
+  const expectedMode = quiz.type === 1 ? "quiz1" : "quiz2";
+  if (document.body.dataset.mode !== expectedMode) return;
   if (quiz.qNum >= QUIZ_TOTAL){ showQuizEnd(); return; }
   quiz.qNum++;
   updateQuizHead();
   quiz.current = pickQuestion();
+  if (!quiz.current){ showQuizEnd(); return; }
   quiz.answering = true;
+  quiz.questionStartedAt = performance.now();
   resetKeyStates();
+  practiceSelectedKeys.clear();
   if (quiz.type === 1) askQuiz1(); else askQuiz2();
+}
+function fisherYates(items){
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index--){
+    const swap = Math.floor(Math.random() * (index + 1));
+    [result[index],result[swap]] = [result[swap],result[index]];
+  }
+  return result;
+}
+function scheduleNextQuestion(delay){
+  clearQuizTimer();
+  quiz.timer = setTimeout(() => {
+    quiz.timer = null;
+    nextQuestion();
+  }, delay);
 }
 function askQuiz1(){
   const q = quiz.current;
   applyFingering(q.id, -1, { silent:true });
   document.getElementById("note-info").innerHTML =
-    `<div class="ni-main"><div class="ni-name">❓</div><div class="ni-ko">이 운지는 무슨 음일까요?</div></div>`;
-  const pool = quizPool().filter(n => n.id !== q.id);
-  const distractors = [];
-  while (distractors.length < 3 && pool.length){
-    const i = Math.floor(Math.random() * pool.length);
-    distractors.push(pool.splice(i, 1)[0]);
-  }
-  const choices = [q, ...distractors].sort(() => Math.random() - .5);
+    `<div class="ni-main"><div class="ni-title-row"><div class="ni-name">?</div><div class="ni-count">운지 보고 맞히기</div></div><div class="ni-ko">표시된 기본 운지는 무슨 음일까요?</div></div>`;
+  const ranked = quizPool().filter(n => n.id !== q.id).sort((a,b) => {
+    const octaveDistance = Number(a.oct !== q.oct) - Number(b.oct !== q.oct);
+    return octaveDistance || Math.abs(a.midi - q.midi) - Math.abs(b.midi - q.midi);
+  });
+  const distractors = fisherYates(ranked.slice(0,Math.min(8,ranked.length))).slice(0,3);
+  const choices = fisherYates([q,...distractors]);
   document.getElementById("quiz-body").innerHTML = `
-    <div class="quiz-question">문제 ${quiz.qNum} / ${QUIZ_TOTAL} — 플루트에 표시된 운지를 보고 음을 고르세요</div>
+    <div class="quiz-question">문제 ${quiz.qNum} / ${QUIZ_TOTAL} — 플루트에 표시된 기본 운지를 보고 음을 고르세요</div>
     <div class="quiz-choices">${choices.map(c =>
       `<button class="quiz-choice" data-id="${c.id}">${c.ko}<br><small>${c.name}</small></button>`).join("")}</div>
-    <div class="quiz-feedback"></div>`;
+    <div class="quiz-feedback" aria-live="polite"></div>
+    <div class="quiz-actions"></div>`;
   document.querySelectorAll(".quiz-choice").forEach(btn =>
     btn.addEventListener("click", () => answerQuiz1(btn)));
 }
@@ -1058,138 +2053,434 @@ function answerQuiz1(btn){
   const q = quiz.current;
   const ok = btn.dataset.id === q.id;
   const fb = document.querySelector(".quiz-feedback");
+  const responseMs = Math.round(performance.now() - quiz.questionStartedAt);
   document.querySelectorAll(".quiz-choice").forEach(b => {
     b.disabled = true;
     if (b.dataset.id === q.id) b.classList.add("correct");
   });
+  applyFingering(q.id, -1, {silent:true});
   if (ok){
     quiz.score++;
     updateQuizHead();
-    playNoteById(q.id, 0.9);
-    fb.textContent = "⭕ 정답! " + `${q.oct}옥타브 ${q.ko}(${q.name})`;
-    setTimeout(nextQuestion, 1000);
+    playNoteById(q.id, .9, {kind:"quiz"});
+    fb.textContent = `정답! ${q.oct}옥타브 ${q.ko}(${q.name}) · ${responseMs}ms`;
+    if (navigator.vibrate) navigator.vibrate(20);
+    scheduleNextQuestion(1500);
   } else {
     btn.classList.add("wrong");
-    fb.innerHTML = `❌ 정답은 <b>${q.ko}(${q.name})</b>. ${q.tip || ""}`;
-    setTimeout(nextQuestion, 2300);
+    quiz.missed.add(q.id);
+    fb.innerHTML = `정답은 <b>${q.ko}(${q.name})</b>입니다. ${q.tip || ""}`;
+    if (navigator.vibrate) navigator.vibrate([20,30,20]);
+    scheduleNextQuestion(2800);
   }
+  recordProgress(q.id, ok, responseMs, !ok);
+  const actions = document.querySelector(".quiz-actions");
+  actions.innerHTML = `<button class="primary" id="quiz-next">다음 문제</button>`;
+  document.getElementById("quiz-next").addEventListener("click", nextQuestion);
 }
 function askQuiz2(){
   const q = quiz.current;
   document.getElementById("note-info").innerHTML =
-    `<div class="ni-main"><div class="ni-name">${q.ko} <small style="font-size:1rem">(${q.name})</small></div>
-     <div class="ni-ko">${q.oct}옥타브 — 이 음의 운지를 플루트 키를 눌러 만들어 보세요</div></div>`;
+    `<div class="ni-main"><div class="ni-title-row"><div class="ni-name">${q.ko}</div><div class="ni-count">${q.name}</div></div>
+     <div class="ni-ko">${q.oct}옥타브 — 기본 운지를 직접 만들어 보세요</div></div>`;
   document.getElementById("quiz-body").innerHTML = `
-    <div class="quiz-question">문제 ${quiz.qNum} / ${QUIZ_TOTAL} — 플루트의 키를 직접 클릭한 뒤 [확인]을 누르세요</div>
+    <div class="quiz-question">문제 ${quiz.qNum} / ${QUIZ_TOTAL} — 아래 15키 패드나 플루트 키로 기본 운지를 만드세요</div>
+    <div id="key-input-pad">${practicePadMarkup()}</div>
     <div class="quiz-actions">
       <button class="primary" id="quiz2-check">확인</button>
       <button id="quiz2-clear">모두 지우기</button>
     </div>
-    <div class="quiz-feedback"></div>`;
+    <div class="quiz-feedback" aria-live="polite"></div>`;
+  document.querySelectorAll(".practice-key").forEach(button =>
+    button.addEventListener("click", () => togglePracticeKey(button.dataset.key)));
   document.getElementById("quiz2-check").addEventListener("click", gradeQuiz2);
   document.getElementById("quiz2-clear").addEventListener("click", () => {
-    if (quiz.answering) document.querySelectorAll(".key").forEach(el => el.classList.remove("pressed"));
+    if (!quiz.answering) return;
+    practiceSelectedKeys.clear();
+    renderPracticeSelection();
+  });
+  validatePracticePad();
+}
+const PRACTICE_GROUPS = Object.freeze([
+  {label:"엄지",keys:["thumbBb","thumbB"]},
+  {label:"왼손",keys:["L1","L2","L3","gis"]},
+  {label:"사이드·트릴",keys:["bbSide","tr1","tr2"]},
+  {label:"오른손",keys:["R1","R2","R3"]},
+  {label:"오른 새끼",keys:["eb","lowCis","lowC"]}
+]);
+function practicePadMarkup(){
+  return PRACTICE_GROUPS.map(group => `<div class="key-pad-group" data-size="${group.keys.length}">
+    <div class="key-pad-heading">${group.label}</div>
+    ${group.keys.map(key => `<button class="practice-key" data-key="${key}" aria-pressed="false">${KEY_LABEL[key]}</button>`).join("")}
+  </div>`).join("");
+}
+function validatePracticePad(){
+  const keys = [...document.querySelectorAll(".practice-key")].map(button => button.dataset.key);
+  const valid = keys.length === KEY_IDS.length && new Set(keys).size === KEY_IDS.length && KEY_IDS.every(key => keys.includes(key));
+  if (!valid) console.error("❌ PRACTICE: 15키 패드 매핑 오류");
+  return valid;
+}
+function togglePracticeKey(keyId){
+  if (!quiz.answering || !KEY_IDS.includes(keyId)) return;
+  if (practiceSelectedKeys.has(keyId)) practiceSelectedKeys.delete(keyId);
+  else practiceSelectedKeys.add(keyId);
+  document.querySelectorAll(".key.grade-ok,.key.grade-wrong,.key.grade-miss").forEach(el =>
+    el.classList.remove("grade-ok","grade-wrong","grade-miss"));
+  renderPracticeSelection();
+}
+function renderPracticeSelection(){
+  KEY_IDS.forEach(key => {
+    document.getElementById(KEY_DOM[key])?.classList.toggle("pressed", practiceSelectedKeys.has(key));
+    const button = document.querySelector(`.practice-key[data-key="${key}"]`);
+    if (button) button.setAttribute("aria-pressed", String(practiceSelectedKeys.has(key)));
   });
 }
 function gradeQuiz2(){
   if (!quiz.answering) return;
   quiz.answering = false;
   const q = quiz.current;
-  const target = new Set(q.keys.map(k => KEY_DOM[k]));
-  const user = new Set([...document.querySelectorAll(".key.pressed")].map(el => el.id));
-  let allOk = true;
-  document.querySelectorAll(".key").forEach(el => {
-    const inT = target.has(el.id), inU = user.has(el.id);
-    if (inT && inU) el.classList.add("grade-ok");
-    else if (!inT && inU){ el.classList.add("grade-wrong"); allOk = false; }
-    else if (inT && !inU){ el.classList.add("grade-miss"); allOk = false; }
+  const target = new Set(q.keys);
+  const selected = new Set(practiceSelectedKeys);
+  const allOk = target.size === selected.size && [...target].every(key => selected.has(key));
+  KEY_IDS.forEach(key => {
+    const inTarget = target.has(key), inSelected = selected.has(key);
+    const grade = inTarget && inSelected ? "grade-ok" : !inTarget && inSelected ? "grade-wrong" : inTarget ? "grade-miss" : "";
+    if (grade) document.getElementById(KEY_DOM[key])?.classList.add(grade);
+    const button = document.querySelector(`.practice-key[data-key="${key}"]`);
+    if (button && grade) button.classList.add(grade);
   });
   const fb = document.querySelector(".quiz-feedback");
+  const responseMs = Math.round(performance.now() - quiz.questionStartedAt);
   if (allOk){
     quiz.score++;
     updateQuizHead();
-    playNoteById(q.id, 0.9);
-    fb.textContent = "⭕ 완벽해요!";
+    playNoteById(q.id, .9, {kind:"quiz"});
+    fb.innerHTML = `<b>완벽해요!</b><div class="grade-legend"><span class="ok">맞음</span></div>`;
+    if (navigator.vibrate) navigator.vibrate(20);
   } else {
-    fb.innerHTML = `초록=맞음 · 빨강=잘못 누름 · 노랑 점선=빠뜨림. ${q.tip ? "💡 " + q.tip : ""}`;
+    quiz.missed.add(q.id);
+    fb.innerHTML = `<div class="grade-legend"><span class="ok">맞음</span><span class="wrong">잘못 누름</span><span class="miss">빠뜨림</span></div>${q.tip ? `<p>${q.tip}</p>` : ""}`;
+    if (navigator.vibrate) navigator.vibrate([20,30,20]);
   }
+  recordProgress(q.id, allOk, responseMs, !allOk);
   const actions = document.querySelector(".quiz-actions");
-  const nextBtn = document.createElement("button");
-  nextBtn.className = "primary";
-  nextBtn.textContent = "다음 문제";
-  nextBtn.addEventListener("click", nextQuestion);
-  actions.appendChild(nextBtn);
+  actions.innerHTML = `<button class="primary" id="quiz2-next">다음 문제</button>`;
+  document.getElementById("quiz2-next").addEventListener("click", nextQuestion);
 }
 function showQuizEnd(){
-  const key = quiz.type === 1 ? "fluteQuizBest1" : "fluteQuizBest2";
-  let best = 0;
-  try { best = parseInt(localStorage.getItem(key) || "0", 10); } catch(e){}
-  if (quiz.score > best){
-    best = quiz.score;
-    try { localStorage.setItem(key, String(best)); } catch(e){}
-  }
+  clearQuizTimer();
+  const key = quiz.type === 1 ? "quiz1" : "build";
+  const best = Math.max(progressState?.best?.[key] || 0, quiz.score);
+  if (progressState) progressState.best[key] = best;
+  saveProgress();
   const perfect = quiz.score === QUIZ_TOTAL;
+  const revisit = [...quiz.missed].map(id => {
+    const note = noteById(id);
+    return `<button class="secondary-button" data-review-note="${id}">${note.ko} ${note.name}</button>`;
+  }).join("");
   document.getElementById("quiz-body").innerHTML = `
     <div class="quiz-end">
       <div class="big">${perfect ? '<span class="burst">🎉</span> 💯 <span class="burst">🎉</span>' : "🏁"}</div>
       <p><b>${quiz.score} / ${QUIZ_TOTAL}</b> 문제를 맞혔어요! (최고 기록: ${best})</p>
+      ${revisit ? `<h3 style="margin-top:14px">다시 볼 음</h3><div class="practice-launchers" style="justify-content:center;margin-top:8px">${revisit}</div>` : "<p style='margin-top:10px'>다시 볼 음 없이 모두 익혔어요.</p>"}
       <div class="quiz-actions" style="justify-content:center">
         <button class="primary" id="quiz-again">다시 도전</button>
         <button id="quiz-exit">배우기로 돌아가기</button>
       </div>
     </div>`;
-  document.getElementById("quiz-again").addEventListener("click", () => startQuiz(quiz.type));
+  document.querySelectorAll("[data-review-note]").forEach(button => button.addEventListener("click", () => {
+    setMode("learn");
+    selectNote(button.dataset.reviewNote, {source:"tap"});
+  }));
+  document.getElementById("quiz-again").addEventListener("click", () =>
+    quiz.daily ? startDailyPractice() : startQuiz(quiz.type));
   document.getElementById("quiz-exit").addEventListener("click", () => setMode("learn"));
 }
 
-/* 퀴즈2에서만 키 직접 클릭 토글 */
+function buildDailyQueue(){
+  const stats = progressState?.notes || {};
+  const practiced = NOTES.filter(note => stats[note.id]).sort((a,b) =>
+    (stats[a.id].mastery || 0) - (stats[b.id].mastery || 0) ||
+    new Date(stats[a.id].lastSeen || 0) - new Date(stats[b.id].lastSeen || 0));
+  const fresh = NOTES.filter(note => !stats[note.id]);
+  const weak = practiced.slice(0,7);
+  const newNotes = fisherYates(fresh).slice(0,3);
+  const selected = [...weak,...newNotes];
+  fisherYates(NOTES).forEach(note => {
+    if (selected.length < 10 && !selected.some(item => item.id === note.id)) selected.push(note);
+  });
+  return fisherYates(selected.slice(0,10)).map(note => note.id);
+}
+function startDailyPractice(){
+  if (appState.mode !== "quiz1") setMode("quiz1");
+  startQuiz(1,{queue:buildDailyQueue(),daily:true});
+}
+
+function buildSpeedQueue(){
+  const picks = [
+    ...fisherYates(NOTE_GROUPS.low.noteIds).slice(0,4).map(noteId => ({group:"low",noteId})),
+    ...fisherYates(NOTE_GROUPS.high.noteIds).slice(0,3).map(noteId => ({group:"high",noteId})),
+    ...fisherYates(NOTE_GROUPS.accidental.noteIds).slice(0,3).map(noteId => ({group:"accidental",noteId}))
+  ];
+  return fisherYates(picks);
+}
+function startSpeed(){
+  stopSpeed();
+  speed.queue = buildSpeedQueue();
+  speed.index = 0;
+  speed.score = 0;
+  speed.totalResponseMs = 0;
+  speed.results = [];
+  document.getElementById("quiz-score").textContent = `0 / ${QUIZ_TOTAL}`;
+  document.getElementById("quiz-progress-fill").style.setProperty("--qp","0%");
+  showSpeedQuestion();
+}
+function showSpeedQuestion(){
+  clearTimeout(speed.timer);
+  if (document.body.dataset.mode !== "speed") return;
+  if (speed.index >= speed.queue.length){ showSpeedEnd(); return; }
+  const item = speed.queue[speed.index];
+  const note = noteById(item.noteId);
+  const group = NOTE_GROUPS[item.group];
+  speed.answering = true;
+  speed.startedAt = performance.now();
+  document.getElementById("quiz-body").innerHTML = `
+    <div class="speed-question">
+      <div>문제 ${speed.index + 1} / ${QUIZ_TOTAL}</div>
+      <div class="big">${group.label} · ${note.ko}</div>
+      <p>${matchMedia("(hover:hover) and (pointer:fine)").matches ? "올바른 단축키를 누르세요" : "분류 탭과 계이름 버튼으로 답하세요"}</p>
+    </div>
+    <div class="speed-gauge" aria-label="남은 시간 5초"><div class="speed-gauge-fill"></div></div>
+    <div class="quiz-feedback" aria-live="polite"></div>`;
+  speed.timer = setTimeout(() => finishSpeedAnswer(false,"시간 초과"),5000);
+}
+function handleSpeedAnswer(noteId, source){
+  if (document.body.dataset.mode !== "speed" || !speed.answering) return;
+  const item = speed.queue[speed.index];
+  finishSpeedAnswer(noteId === item.noteId, source);
+}
+function finishSpeedAnswer(correct, source){
+  if (!speed.answering) return;
+  speed.answering = false;
+  clearTimeout(speed.timer);
+  const item = speed.queue[speed.index];
+  const responseMs = Math.min(5000,Math.round(performance.now() - speed.startedAt));
+  speed.totalResponseMs += responseMs;
+  if (correct){
+    speed.score++;
+    playNoteById(item.noteId,.65,{kind:"quiz"});
+    if (navigator.vibrate) navigator.vibrate(20);
+  } else if (navigator.vibrate) navigator.vibrate([20,30,20]);
+  speed.results.push({noteId:item.noteId,group:item.group,correct,responseMs});
+  recordProgress(item.noteId,correct,responseMs,!correct);
+  document.querySelector(".quiz-feedback").textContent = correct
+    ? `정답 · ${responseMs}ms`
+    : `다시 확인: ${noteById(item.noteId).ko} ${noteById(item.noteId).name}`;
+  speed.index++;
+  document.getElementById("quiz-score").textContent = `${speed.score} / ${QUIZ_TOTAL}`;
+  document.getElementById("quiz-progress-fill").style.setProperty("--qp",`${(speed.index / QUIZ_TOTAL) * 100}%`);
+  speed.timer = setTimeout(showSpeedQuestion,correct ? 500 : 900);
+}
+function showSpeedEnd(){
+  const average = speed.results.length ? Math.round(speed.totalResponseMs / speed.results.length) : 0;
+  const previous = progressState?.best?.speed;
+  const isBetter = !previous || speed.score > previous.score || (speed.score === previous.score && average > 0 && average < previous.avgResponseMs);
+  if (progressState && isBetter) progressState.best.speed = {score:speed.score,avgResponseMs:average};
+  saveProgress();
+  const revisit = speed.results.filter(result => !result.correct).map(result => noteById(result.noteId));
+  document.getElementById("quiz-body").innerHTML = `
+    <div class="quiz-end"><div class="big">⚡</div><p><b>${speed.score} / 10</b> · 평균 ${average || "—"}ms</p>
+    ${revisit.length ? `<h3 style="margin-top:12px">다시 볼 음</h3><p>${revisit.map(note => `${note.ko}(${note.name})`).join(" · ")}</p>` : "<p>모든 음을 정확히 찾았어요.</p>"}
+    <div class="quiz-actions" style="justify-content:center"><button class="primary" id="speed-again">다시 연습</button><button id="speed-exit">배우기로</button></div></div>`;
+  document.getElementById("speed-again").addEventListener("click",startSpeed);
+  document.getElementById("speed-exit").addEventListener("click",() => setMode("learn"));
+}
+
+/* 퀴즈2에서 키패드와 SVG가 같은 상태를 토글 */
 function initKeyClicks(){
   document.querySelectorAll(".key").forEach(el =>
     el.addEventListener("click", () => {
       if (document.body.dataset.mode !== "quiz2" || !quiz.answering) return;
-      el.classList.toggle("pressed");
+      const key = KEY_IDS.find(id => KEY_DOM[id] === el.id);
+      if (key) togglePracticeKey(key);
     }));
 }
 
 /* ----- 도움말 오버레이 ----- */
 function buildHelpSvg(){
-  const svg = document.getElementById("help-svg");
-  const NS = "http://www.w3.org/2000/svg";
-  svg.innerHTML = `<use href="#flute"/><use href="#thumb-inset"/>`;
   const GROUP_COLOR = { thumbBb:"#e74c3c", thumbB:"#e74c3c", L1:"#3498db", L2:"#3498db", L3:"#3498db",
     gis:"#9b59b6", bbSide:"#f39c12", tr1:"#f39c12", tr2:"#f39c12",
     R1:"#2ecc71", R2:"#2ecc71", R3:"#2ecc71", eb:"#9b59b6", lowCis:"#9b59b6", lowC:"#9b59b6" };
-  // 라벨을 위/아래로 번갈아 배치 + 지시선
-  const above = ["bbSide","tr1","tr2","thumbB","thumbBb"];
-  Object.entries(KEY_POS).forEach(([k,[x,y]]) => {
-    const g = document.createElementNS(NS, "g");
-    const isThumb = (k === "thumbB" || k === "thumbBb");
-    const up = above.includes(k);
-    const ly = isThumb ? y + 90 : (up ? y - 60 : y + 78);
-    const lx = isThumb ? (k === "thumbBb" ? x - 26 : x + 26) : x;
-    g.innerHTML = `
-      <line x1="${x}" y1="${y}" x2="${lx}" y2="${ly - (up ? -12 : 14)}" stroke="${GROUP_COLOR[k]}" stroke-width="1.4" stroke-dasharray="3 3"/>
-      <text x="${lx}" y="${ly + (up ? -2 : 10)}" text-anchor="middle" font-size="15" font-weight="700" fill="${GROUP_COLOR[k]}">${KEY_LABEL[k]}</text>`;
-    svg.appendChild(g);
-  });
+  const map = (title,preset,keys) => {
+    const labels = keys.map((key,index) => {
+      const [x,y] = KEY_POS[key];
+      const above = index % 2 === 0;
+      const labelY = y + (above ? -46 : 58);
+      return `<line x1="${x}" y1="${y}" x2="${x}" y2="${labelY + (above ? 8 : -16)}" stroke="${GROUP_COLOR[key]}" stroke-width="3" stroke-dasharray="6 5"/>
+        <text x="${x}" y="${labelY}" text-anchor="middle" font-size="32" font-weight="800" fill="${GROUP_COLOR[key]}">${KEY_LABEL[key]}</text>`;
+    }).join("");
+    return `<div class="help-map"><h3>${title}</h3><svg viewBox="${VIEW_PRESETS[preset]}" role="img" aria-label="${title} 키 이름">
+      <use href="#flute"></use><use href="#thumb-inset"></use>${labels}</svg></div>`;
+  };
+  const keyboardRows = Object.values(NOTE_GROUPS).map(group =>
+    `<div class="kbd-guide-row"><b>${group.shortcutLabel} · ${group.label}</b><span>${group.codes.map(code => `<kbd>${code.replace("Digit","")}</kbd>`).join("")}</span></div>`).join("");
+  document.getElementById("help-content").innerHTML = `
+    <details class="help-section" open><summary>손가락 색과 키 이름</summary><div class="help-section-body">
+      <div class="legend">
+        <span><span class="dot" style="background:var(--c-thumb)"></span>엄지</span>
+        <span><span class="dot" style="background:var(--c-left)"></span>왼손</span>
+        <span><span class="dot" style="background:var(--c-right)"></span>오른손</span>
+        <span><span class="dot" style="background:var(--c-trill)"></span>트릴·사이드</span>
+        <span><span class="dot" style="background:var(--c-pinky)"></span>새끼 특수키</span>
+      </div>
+      <div class="help-map-grid">
+        ${map("왼손과 엄지","left",["thumbBb","thumbB","L1","L2","L3","gis"])}
+        ${map("오른손과 트릴","right",["bbSide","tr1","tr2","R1","R2","R3"])}
+        ${map("오른 새끼와 풋","foot",["eb","lowCis","lowC"])}
+      </div>
+    </div></details>
+    <details class="help-section"><summary>낮은·높은·반음 선택과 단축키</summary><div class="help-section-body">
+      <p style="line-height:1.6;margin-bottom:8px">분류 탭을 고른 뒤 계이름을 누르세요. 데스크톱에서는 왼쪽 Ctrl·Shift·Alt와 숫자 위쪽 줄을 함께 쓸 수 있어요.</p>
+      ${keyboardRows}
+      <p class="kbd-guide-note">←/→ 반음 · ↑/↓ 옥타브. 일부 브라우저나 운영체제가 단축키를 먼저 사용하면 화면 버튼을 이용하세요.</p>
+    </div></details>
+    <details class="help-section"><summary>꼭 기억할 세 가지</summary><div class="help-section-body">
+      <ul class="help-rules">
+        <li><b>E♭키를 떼는 음은 7개</b> — C4·C♯4·D4·D5·B♭6·B6·C7.</li>
+        <li><b>엄지를 떼는 음</b> — C5·C♯5·C6·C♯6·G6·G♯6·C7.</li>
+        <li><b>2옥타브에서 달라지는 음은 4개뿐</b> — C5·C♯5·D5·E♭5. 3옥타브부터는 새로운 운지예요.</li>
+      </ul>
+    </div></details>`;
+}
+const overlayReturnFocus = new Map();
+function focusableElements(container){
+  const closedDetails = [...container.querySelectorAll("details:not([open])")];
+  return [...container.querySelectorAll('button:not([disabled]),select:not([disabled]),input:not([disabled]),a[href],summary,[tabindex]:not([tabindex="-1"])')]
+    .filter(element => {
+      const hiddenByDetails = closedDetails.some(details =>
+        details.contains(element) && details.querySelector(":scope > summary") !== element);
+      return !hiddenByDetails && !element.closest("[hidden]") &&
+        element.getClientRects().length > 0 && getComputedStyle(element).visibility !== "hidden";
+    });
+}
+function trapFocus(event,container){
+  if (event.key !== "Tab") return;
+  const items = focusableElements(container);
+  if (!items.length){ event.preventDefault(); container.focus(); return; }
+  const first = items[0], last = items.at(-1);
+  if (event.shiftKey && document.activeElement === first){ event.preventDefault(); last.focus(); }
+  else if (!event.shiftKey && document.activeElement === last){ event.preventDefault(); first.focus(); }
+}
+function openOverlay(id,trigger){
+  const overlay = document.getElementById(id);
+  if (!overlay || !overlay.hidden) return;
+  overlayReturnFocus.set(id,trigger || document.activeElement);
+  overlay.hidden = false;
+  const shell = document.getElementById("app-shell");
+  if ("inert" in shell) shell.inert = true;
+  else shell.setAttribute("aria-hidden","true");
+  requestAnimationFrame(() => (focusableElements(overlay)[0] || overlay.querySelector('[role="dialog"]'))?.focus());
+}
+function closeSheet(id){
+  const overlay = document.getElementById(id);
+  if (!overlay || overlay.hidden) return;
+  overlay.hidden = true;
+  if (![...document.querySelectorAll(".sheet-overlay,#help-overlay")].some(item => !item.hidden)){
+    const shell = document.getElementById("app-shell");
+    if ("inert" in shell) shell.inert = false;
+    shell.removeAttribute("aria-hidden");
+  }
+  overlayReturnFocus.get(id)?.focus?.();
+  overlayReturnFocus.delete(id);
+}
+function showToast(message){
+  const toast = document.getElementById("app-toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"),2200);
+}
+async function shareCurrentNote(){
+  if (!appState.noteId) return;
+  updateUrl();
+  const note = noteById(appState.noteId);
+  const data = {title:`플루트 운지 · ${note.ko} ${note.name}`,text:`${note.ko}(${note.name}) 플루트 운지`,url:location.href};
+  try {
+    if (navigator.share) await navigator.share(data);
+    else if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(data.url);
+    else {
+      const input = document.createElement("textarea");
+      input.value = data.url;
+      input.style.position = "fixed";
+      input.style.opacity = "0";
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      input.remove();
+    }
+    showToast(navigator.share ? "공유 창을 열었어요" : "현재 음 링크를 복사했어요");
+  } catch(error){
+    if (error?.name !== "AbortError") showToast("링크를 복사하지 못했어요. 주소창의 링크를 이용해 주세요");
+  }
+}
+function openAllNotes(){
+  const note = noteById(appState.noteId);
+  document.querySelectorAll(".octave-section").forEach(section => section.open = Number(section.dataset.oct) === (note?.oct || 1));
+  openOverlay("all-notes-overlay",document.getElementById("all-notes-btn"));
+  requestAnimationFrame(() => document.querySelector(`.note-btn[data-note="${appState.noteId}"]`)?.scrollIntoView({block:"center"}));
 }
 function initHelp(){
-  const overlay = document.getElementById("help-overlay");
+  const help = document.getElementById("help-overlay");
   document.getElementById("help-btn").addEventListener("click", () => {
     buildHelpSvg();
-    overlay.hidden = false;
+    openOverlay("help-overlay",document.getElementById("help-btn"));
   });
-  const close = () => { overlay.hidden = true; };
-  document.getElementById("help-close").addEventListener("click", close);
-  overlay.querySelector(".help-backdrop").addEventListener("click", close);
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && !overlay.hidden) close(); });
+  document.getElementById("help-close").addEventListener("click", () => closeSheet("help-overlay"));
+  help.querySelector(".help-backdrop").addEventListener("click", () => closeSheet("help-overlay"));
+  help.querySelector(".help-card").addEventListener("keydown",event => trapFocus(event,event.currentTarget));
+
+  document.getElementById("more-btn").addEventListener("click", () => openOverlay("more-overlay",document.getElementById("more-btn")));
+  document.getElementById("more-close").addEventListener("click", () => closeSheet("more-overlay"));
+  document.getElementById("sheet-backdrop").addEventListener("click", () => closeSheet("more-overlay"));
+  document.getElementById("more-sheet").addEventListener("keydown",event => trapFocus(event,event.currentTarget));
+
+  document.getElementById("all-notes-btn").addEventListener("click",openAllNotes);
+  document.getElementById("all-notes-close").addEventListener("click", () => closeSheet("all-notes-overlay"));
+  document.querySelector("#all-notes-overlay .sheet-backdrop").addEventListener("click", () => closeSheet("all-notes-overlay"));
+  document.getElementById("all-notes-sheet").addEventListener("keydown",event => trapFocus(event,event.currentTarget));
+
+  document.getElementById("share-note-btn").addEventListener("click",shareCurrentNote);
+  document.getElementById("reset-progress-btn").addEventListener("click", () => {
+    if (!confirm("이 기기의 학습 진도를 모두 초기화할까요?")) return;
+    progressState = createProgressState();
+    progressState.soundOn = appState.soundOn;
+    saveProgress();
+    showToast("학습 진도를 초기화했어요");
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape") return;
+    if (!help.hidden) closeSheet("help-overlay");
+    else if (!document.getElementById("all-notes-overlay").hidden) closeSheet("all-notes-overlay");
+    else if (!document.getElementById("more-overlay").hidden) closeSheet("more-overlay");
+  });
 }
 function initModes(){
-  ["learn","quiz1","quiz2"].forEach(m =>
-    document.getElementById("mode-" + m).addEventListener("click", () => setMode(m)));
+  ["learn","quiz1","quiz2"].forEach(mode =>
+    document.getElementById("mode-" + mode).addEventListener("click", () => setMode(mode)));
+  document.getElementById("quiz-kind-standard").addEventListener("click", () => setMode("quiz1"));
+  document.getElementById("quiz-kind-speed").addEventListener("click", () => setMode("speed"));
+  document.getElementById("daily-practice-btn").addEventListener("click",startDailyPractice);
   document.getElementById("quiz-range").addEventListener("change", () => {
-    if (document.body.dataset.mode !== "learn") startQuiz(quiz.type);
+    if (["quiz1","quiz2"].includes(document.body.dataset.mode)) startQuiz(quiz.type);
   });
+  document.querySelectorAll(".camera-button").forEach(button => button.addEventListener("click", () => {
+    appState.camera = button.dataset.camera;
+    syncCamera();
+  }));
+  const desktop = matchMedia("(min-width: 1024px)");
+  desktop.addEventListener?.("change", () => syncCamera(true));
 }
 /* ===== PRINT (STEP 7) =====
    #print-sheet는 페이지 로드 시 1회 생성 → 화면에서는 숨김, @media print에서만 표시.
@@ -1248,18 +2539,87 @@ function initPrint(){
   buildPrintSheet();
   document.getElementById("print-btn").addEventListener("click", () => window.print());
 }
-/* 모바일 초기화: 스와이프 힌트 1회 + 옥타브 아코디언 접기 */
+/* 모바일 레이아웃은 CSS 미디어쿼리로만 결정한다. */
 function initMobile(){
-  if (window.innerWidth > 767) return;
-  document.querySelectorAll(".octave-section").forEach((sec, i) => { if (i > 0) sec.open = false; });
-  let seen = false;
-  try { seen = !!localStorage.getItem("fluteSwipeHintShown"); } catch(e){}
-  if (!seen){
-    const hint = document.getElementById("swipe-hint");
-    hint.classList.add("show");
-    setTimeout(() => hint.classList.remove("show"), 3500);
-    try { localStorage.setItem("fluteSwipeHintShown", "1"); } catch(e){}
-  }
+  syncCamera(true);
+}
+
+let deferredInstallPrompt = null;
+let waitingServiceWorker = null;
+let applyingServiceWorkerUpdate = false;
+function exposeAppUpdate(worker){
+  waitingServiceWorker = worker;
+  document.getElementById("update-row").hidden = false;
+}
+function initPwa(){
+  window.addEventListener("beforeinstallprompt", event => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    document.getElementById("install-row").hidden = false;
+  });
+  document.getElementById("install-app-btn").addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    document.getElementById("install-row").hidden = true;
+  });
+  document.getElementById("apply-update-btn").addEventListener("click", () => {
+    applyingServiceWorkerUpdate = true;
+    waitingServiceWorker?.postMessage({type:"SKIP_WAITING"});
+  });
+  if (!("serviceWorker" in navigator) || !(location.protocol === "https:" || ["localhost","127.0.0.1"].includes(location.hostname))) return;
+  navigator.serviceWorker.register("./sw.js").then(registration => {
+    if (registration.waiting) exposeAppUpdate(registration.waiting);
+    registration.addEventListener("updatefound", () => {
+      const worker = registration.installing;
+      worker?.addEventListener("statechange", () => {
+        if (worker.state === "installed" && navigator.serviceWorker.controller) exposeAppUpdate(worker);
+      });
+    });
+  }).catch(() => showToast("오프라인 준비를 완료하지 못했지만 학습 기능은 사용할 수 있어요"));
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloading || !applyingServiceWorkerUpdate) return;
+    reloading = true;
+    location.reload();
+  });
+}
+function initLifecycle(){
+  let resumeSpeed = false;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden){
+      stopAutoplay();
+      VoiceManager.stopAll();
+      if (appState.mode === "speed" && speed.answering){
+        clearTimeout(speed.timer);
+        speed.timer = null;
+        speed.answering = false;
+        resumeSpeed = true;
+      }
+    } else if (resumeSpeed && appState.mode === "speed"){
+      resumeSpeed = false;
+      showSpeedQuestion();
+    }
+  });
+  window.addEventListener("pagehide", () => {
+    stopAutoplay();
+    clearQuizTimer();
+    stopSpeed();
+    VoiceManager.stopAll();
+  });
+}
+function initDebugTools(){
+  if (location.hash !== "#debug") return;
+  window.__fluteStressTest = async () => {
+    const originalSound = appState.soundOn;
+    appState.soundOn = false;
+    for (let index = 0; index < 100; index++){
+      selectNote(NOTES[index % NOTES.length].id,{source:"tap",playSound:false,updateUrl:false,announce:false});
+    }
+    appState.soundOn = originalSound;
+    return {voices:VoiceManager.voices.size,autoplayTimer:Boolean(autoplay.timer),quizTimer:Boolean(quiz.timer)};
+  };
 }
 
 /* ===== INIT ===== */
@@ -1267,6 +2627,13 @@ document.addEventListener("DOMContentLoaded", () => {
   validateData();
   validateFluteSvg();
   validateKeyMap();
+  validateNoteGroups();
+  loadProgress();
+  const params = new URLSearchParams(location.search);
+  const initialGroup = NOTE_GROUPS[params.get("group")] ? params.get("group") : appState.selectorGroup;
+  const initialNote = noteById(params.get("note")) ? params.get("note") : (noteById(progressState.lastNoteId) ? progressState.lastNoteId : "C4");
+  const initialMode = ["learn","quiz1","quiz2","speed"].includes(params.get("mode")) ? params.get("mode") : "learn";
+  appState.selectorGroup = initialGroup;
   buildSelector();
   renderDebugLayer();
   initAudioUI();
@@ -1275,9 +2642,13 @@ document.addEventListener("DOMContentLoaded", () => {
   initKeyClicks();
   initPrint();
   initMobile();
-  // 딥링크: ?note=D5 로 특정 음을 바로 열 수 있음
-  const paramNote = new URLSearchParams(location.search).get("note");
-  applyFingering(paramNote && noteById(paramNote) ? paramNote : "C4");
+  initLifecycle();
+  initPwa();
+  initDebugTools();
+  syncSoundButton();
+  selectNote(initialNote,{source:"deep-link",playSound:false,updateUrl:false,announce:false});
+  setMode(initialMode);
+  renderProgressSummary();
   /* @JS-INIT */
 });
 </script>

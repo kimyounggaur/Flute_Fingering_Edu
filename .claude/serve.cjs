@@ -5,7 +5,8 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "..");
 const PORT = 8477;
 const MIME = { ".html":"text/html; charset=utf-8", ".js":"text/javascript", ".css":"text/css",
-  ".svg":"image/svg+xml", ".png":"image/png", ".jpg":"image/jpeg", ".json":"application/json" };
+  ".svg":"image/svg+xml", ".png":"image/png", ".jpg":"image/jpeg", ".json":"application/json",
+  ".webmanifest":"application/manifest+json" };
 http.createServer((req, res) => {
   const urlPath = decodeURIComponent(new URL(req.url, "http://x").pathname);
   let file = path.normalize(path.join(ROOT, urlPath === "/" ? "index.html" : urlPath));
