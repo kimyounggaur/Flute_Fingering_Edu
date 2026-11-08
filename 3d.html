@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#20283a">
+<meta name="description" content="플루트 37음 운지를 3D 플루트와 손가락 모션으로 확인하는 학습 화면">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2320283a'/%3E%3Cpath d='M10 32h44' stroke='%23e8f0f4' stroke-width='8' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='32' r='8' fill='%23b8893a' stroke='%23fff' stroke-width='2'/%3E%3Ccircle cx='42' cy='32' r='8' fill='%233498db' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="modulepreload" href="vendor/three-0.170.0/three.module.min.js">
+<title>3D 운지 보기 · 플루트 계이름 운지법 배우기</title>
+<style>
+/* ===== 토큰 — index.html "FINAL MOBILE APP SHELL"과 같은 값 ===== */
+:root{
+  --app-bg:#f5f7fa;
+  --surface:#ffffff;
+  --surface-soft:#eef2f6;
+  --ink:#20283a;
+  --muted:#5f6877;
+  --line:#d8dee8;
+  --accent:#b8893a;
+  --danger:#c23b32;
+  --success:#18845b;
+  --focus:#1d6fd8;
+  --radius:8px;
+  --tap:48px;
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+  --topbar-h:52px;
+  --c-thumb:#e74c3c;
+  --c-left:#3498db;
+  --c-right:#2ecc71;
+  --c-trill:#f39c12;
+  --c-pinky:#9b59b6;
+}
+*{box-sizing:border-box;margin:0;padding:0;letter-spacing:0}
+html{background:var(--app-bg);overflow-x:clip}
+body{
+  min-height:100vh;min-height:100dvh;background:var(--app-bg);color:var(--ink);overflow-x:clip;
+  font-family:"Pretendard","Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  padding-bottom:var(--safe-bottom)
+}
+button,select,input{font-family:inherit;font-size:16px}
+button{touch-action:manipulation}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.icon-sprite{position:absolute;width:0;height:0;overflow:hidden}
+.icon{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.icon-sm{width:18px;height:18px}
+.icon-button{
+  min-width:var(--tap);min-height:var(--tap);padding:0;border:1px solid transparent;border-radius:var(--radius);
+  background:transparent;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+}
+.icon-button:hover{background:var(--surface-soft);border-color:var(--line)}
+.icon-button[aria-pressed="true"]{background:#f8f1e5;border-color:var(--accent);color:#7a581d}
+.icon-button:disabled{opacity:.32;cursor:not-allowed}
+.secondary-button{
+  min-height:var(--tap);padding:8px 13px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);color:var(--ink);font-weight:750;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  text-decoration:none;font-size:.9rem
+}
+.secondary-button:hover{border-color:var(--accent)}
+button:focus-visible,a:focus-visible,summary:focus-visible,canvas:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* ===== 상단 바 ===== */
+#app-topbar{
+  position:sticky;top:0;z-index:30;height:var(--topbar-h);padding:0 10px;gap:8px;
+  display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.96);
+  border-bottom:1px solid var(--line);backdrop-filter:blur(12px)
+}
+.app-brand{display:flex;align-items:center;gap:9px;min-width:0;font-size:1rem;font-weight:800}
+.app-brand h1{font:inherit;margin:0;display:flex;align-items:center;gap:6px;min-width:0}
+.app-brand-mark{width:30px;height:30px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;flex:0 0 auto}
+.app-brand-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge-3d{flex:0 0 auto;padding:2px 7px;border-radius:999px;background:var(--ink);color:#fff;font-size:.68rem;font-weight:850;line-height:1.4}
+.back-link{min-height:40px;padding:6px 11px 6px 7px;font-size:.84rem}
+
+/* ===== 본문 ===== */
+main#app-main{width:min(100%,1280px);margin:0 auto;padding:8px 10px 24px;display:flex;flex-direction:column;gap:8px}
+#note-info{
+  margin:0;padding:10px 12px;min-height:86px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px
+}
+#note-info .ni-main{min-width:0}
+#note-info .ni-title-row{display:flex;align-items:baseline;gap:7px;min-width:0}
+#note-info .ni-name{font-size:1.55rem;line-height:1.05;font-weight:850;white-space:nowrap}
+#note-info .ni-count{font-size:.75rem;color:var(--muted);font-weight:650;white-space:nowrap}
+#note-info .ni-ko{font-size:.82rem;color:var(--muted);margin-top:3px}
+#note-info .tip-disclosure{margin-top:5px;font-size:.78rem;color:var(--muted);max-width:100%}
+#note-info .tip-disclosure summary{
+  min-height:44px;display:flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;color:#5f543f;list-style:none
+}
+#note-info .tip-disclosure summary::-webkit-details-marker{display:none}
+#note-info .tip-disclosure p{padding:6px 0 2px;line-height:1.45;color:var(--ink)}
+#note-info .summary-actions{display:flex;align-items:center;gap:6px}
+#note-info .alt-tabs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;padding-top:7px;border-top:1px solid var(--surface-soft)}
+.alt-tab{min-height:44px;padding:7px 11px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--ink);font-size:.82rem;font-weight:700;cursor:pointer}
+.alt-tab[aria-pressed="true"]{border-color:var(--accent);background:#f8f1e5;box-shadow:inset 0 0 0 1px var(--accent)}
+
+#viewer{display:flex;flex-direction:column;gap:8px}
+#view-segment{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+#view-segment::-webkit-scrollbar{display:none}
+.camera-button{
+  flex:1 0 auto;min-height:var(--tap);min-width:60px;padding:7px 9px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);color:var(--muted);font-size:.78rem;font-weight:700;cursor:pointer
+}
+.camera-button[aria-pressed="true"]{color:var(--ink);border-color:var(--accent);background:#f8f1e5;box-shadow:inset 0 0 0 1px var(--accent)}
+#stage3d{
+  position:relative;height:clamp(250px,40dvh,420px);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  background:linear-gradient(180deg,#fdfefe 0%,#eef2f6 64%,#e1e7ed 100%);contain:layout paint
+}
+#stage3d canvas{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
+.stage-label{
+  position:absolute;left:8px;top:8px;max-width:calc(100% - 200px);padding:6px 10px;border-radius:var(--radius);
+  background:rgba(255,255,255,.9);border:1px solid var(--line);font-size:.78rem;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none
+}
+.stage-label b{font-size:1rem;color:var(--ink);margin-right:5px}
+.view-switch{position:absolute;right:8px;top:8px;display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(255,255,255,.92);border:1px solid var(--line)}
+.view-chip{min-height:40px;min-width:46px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-size:.76rem;font-weight:800;cursor:pointer}
+.view-chip[aria-pressed="true"]{background:var(--ink);color:#fff}
+.stage-hint{position:absolute;right:8px;bottom:6px;font-size:.66rem;color:#7e8794;background:rgba(255,255,255,.8);padding:2px 6px;border-radius:4px;pointer-events:none}
+#stage-status{
+  position:absolute;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;
+  text-align:center;color:var(--muted);font-size:.88rem;line-height:1.5;background:rgba(245,247,250,.82)
+}
+#stage-status[hidden]{display:none}
+#stage-status .secondary-button{font-size:.86rem}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+#stage-status.is-error .spinner{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#finger-summary{padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:8px}
+.fs-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.fs-head strong{font-size:.86rem}
+.fs-head span{font-size:.74rem;color:var(--muted);font-weight:650;white-space:nowrap}
+.finger-chips{list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.finger-chips li{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:var(--surface-soft);font-size:.76rem;font-weight:700;line-height:1.3}
+.finger-chips li::before{content:"";flex:0 0 auto;width:9px;height:9px;border-radius:50%;background:var(--dot,#9aa3b0)}
+.finger-chips li[data-group="thumb"]{--dot:var(--c-thumb)}
+.finger-chips li[data-group="left"]{--dot:var(--c-left)}
+.finger-chips li[data-group="right"]{--dot:var(--c-right)}
+.finger-chips li[data-group="trill"]{--dot:var(--c-trill)}
+.finger-chips li[data-group="pinky"]{--dot:var(--c-pinky)}
+.finger-chips li.is-new{box-shadow:inset 0 0 0 1.5px #0d6847}
+.finger-chips li.empty{background:transparent;padding-left:0;color:var(--muted)}
+.finger-chips li.empty::before{display:none}
+.change-summary{font-size:.75rem;line-height:1.45;color:var(--muted)}
+.change-on{color:#0d6847}.change-off{color:#9a2e28}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.7rem;color:var(--muted);border-top:1px solid var(--surface-soft);padding-top:7px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+#side-panel{display:flex;flex-direction:column;gap:8px}
+#selector3d{padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+.octave + .octave{margin-top:10px}
+.octave h2{font-size:.78rem;color:var(--muted);font-weight:800;margin:2px 2px 6px}
+.note-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.note-btn{
+  position:relative;min-width:0;min-height:54px;padding:5px 3px;border:2px solid var(--line);border-radius:var(--radius);
+  background:#fff;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05
+}
+.note-btn .nb-ko{font-size:.91rem;font-weight:850}
+.note-btn .nb-en{font-size:.65rem;color:var(--muted);margin-top:3px;white-space:nowrap}
+.note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
+.note-btn.black .nb-en{color:#c7cfdb}
+.note-btn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(184,137,58,.25)}
+.note-btn.active::after{
+  content:"✓";position:absolute;top:2px;right:3px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;
+  background:var(--accent);color:#fff;font-size:.6rem;font-weight:900
+}
+#options3d{display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+#options3d h2{flex:1 0 100%;font-size:.78rem;color:var(--muted);font-weight:800;margin:2px 2px 0}
+.toggle-button{flex:1 1 auto;font-size:.82rem;padding:8px 10px}
+.toggle-button[aria-pressed="true"]{background:#f8f1e5;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.kbd-note{flex:1 0 100%;font-size:.72rem;color:var(--muted);margin:2px}
+footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;line-height:1.5}
+
+/* 모바일: 3D 화면을 상단에 고정해 아래 음 목록을 넘기면서도 계속 보이게 */
+@media (max-width:1023px) and (min-height:600px){
+  #viewer{position:sticky;top:var(--topbar-h);z-index:10;background:var(--app-bg);padding:6px 0;margin:-6px 0}
+}
+@media (min-width:560px){
+  .note-grid{grid-template-columns:repeat(13,minmax(0,1fr))}
+}
+@media (min-width:768px){
+  main#app-main{padding:14px 20px 34px;gap:12px}
+  #stage3d{height:clamp(340px,52vh,560px)}
+  .toggle-button{flex:0 1 auto}
+}
+@media (min-width:1024px){
+  #app-topbar{padding:0 max(20px,calc((100vw - 1240px)/2))}
+  main#app-main{
+    display:grid;grid-template-columns:minmax(0,1fr) 360px;align-items:start;
+    grid-template-areas:"summary summary" "viewer panel" "fingers panel"
+  }
+  #note-info{grid-area:summary}
+  #viewer{grid-area:viewer}
+  #finger-summary{grid-area:fingers}
+  #side-panel{grid-area:panel;position:sticky;top:calc(var(--topbar-h) + 12px);gap:12px}
+  #stage3d{height:clamp(380px,calc(100dvh - 330px),640px)}
+  .note-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media (hover:none),(pointer:coarse){ .kbd-note{display:none} }
+@media (prefers-reduced-motion:reduce){ .spinner{animation:none} }
+@media (forced-colors:active){
+  .camera-button[aria-pressed="true"],.view-chip[aria-pressed="true"],.alt-tab[aria-pressed="true"],
+  .toggle-button[aria-pressed="true"],.note-btn.active{outline:3px solid Highlight;outline-offset:-3px}
+}
+</style>
+</head>
+<body>
+
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+  <symbol id="icon-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="icon-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></symbol>
+  <symbol id="icon-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+</svg>
+
+<div id="app-shell">
+<header id="app-topbar">
+  <div class="app-brand">
+    <span class="app-brand-mark" aria-hidden="true">●</span>
+    <h1><span class="app-brand-text">플루트 운지</span><span class="badge-3d">3D</span></h1>
+  </div>
+  <a id="back-2d" class="secondary-button back-link" href="./?mode=learn"><svg class="icon icon-sm"><use href="#icon-chevron-left"></use></svg>2D 운지표</a>
+</header>
+
+<main id="app-main">
+  <section id="note-info" aria-label="선택한 음"></section>
+
+  <section id="viewer" aria-label="3D 플루트">
+    <div id="view-segment" role="group" aria-label="보는 영역">
+      <button class="camera-button" data-region="auto" aria-pressed="true">자동</button>
+      <button class="camera-button" data-region="all" aria-pressed="false">전체</button>
+      <button class="camera-button" data-region="left" aria-pressed="false">왼손</button>
+      <button class="camera-button" data-region="right" aria-pressed="false">오른손</button>
+      <button class="camera-button" data-region="foot" aria-pressed="false">새끼·풋</button>
+    </div>
+    <div id="stage3d">
+      <div id="stage-label" class="stage-label" aria-hidden="true"></div>
+      <div class="view-switch" role="group" aria-label="시점">
+        <button class="view-chip" data-view="player" aria-pressed="true" title="연주자 시점 — 플루트를 들고 내려다보는 방향">연주자</button>
+        <button class="view-chip" data-view="mirror" aria-pressed="false" title="거울 시점 — 마주 선 선생님을 보는 방향">거울</button>
+        <button class="view-chip" data-view="top" aria-pressed="false" title="위에서 내려다보기">위</button>
+      </div>
+      <div class="stage-hint" aria-hidden="true">드래그로 회전 · 휠/핀치로 확대</div>
+      <div id="stage-status" role="status">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="stage-status-text">3D 플루트를 준비하고 있어요…</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="finger-summary" aria-label="누르는 손가락"></section>
+
+  <div id="side-panel">
+    <section id="selector3d" aria-label="계이름 선택"></section>
+    <section id="options3d" aria-labelledby="options-title">
+      <h2 id="options-title">표시 옵션</h2>
+      <button class="secondary-button toggle-button" data-opt="hands" aria-pressed="true">손 보기</button>
+      <button class="secondary-button toggle-button" data-opt="ghost" aria-pressed="false">손 반투명</button>
+      <button class="secondary-button toggle-button" data-opt="diff" aria-pressed="true">변화 강조</button>
+      <button class="secondary-button toggle-button" data-opt="slow" aria-pressed="false">느리게 0.4×</button>
+      <p class="kbd-note">키보드: ←/→ 반음 · ↑/↓ 옥타브</p>
+    </section>
+  </div>
+</main>
+
+<footer>3D 플루트와 손은 학습용 근사 모델이에요 · 운지 데이터는 2D 운지표와 같아요 (flutetunes.com · Woodwind Fingering Guide 교차 검증)</footer>
+</div>
+
+<div id="aria-status" class="sr-only" aria-live="polite"></div>
+<noscript><p style="padding:16px;text-align:center">3D 보기는 JavaScript가 필요해요. <a href="./">2D 운지표</a>를 이용해 주세요.</p></noscript>
+
+<script>
+/* 모듈을 실행할 수 없는 환경(구형 브라우저·파일 누락)에서도 안내가 나오도록 하는 일반 스크립트 */
+window.flute3dFail = function (message){
+  var box = document.getElementById("stage-status");
+  if (!box) return;
+  box.hidden = false;
+  box.classList.add("is-error");
+  var p = document.getElementById("stage-status-text");
+  p.textContent = message;
+  if (!document.getElementById("fallback-2d")){
+    var a = document.createElement("a");
+    a.id = "fallback-2d";
+    a.className = "secondary-button";
+    a.href = document.getElementById("back-2d").getAttribute("href");
+    a.textContent = "2D 운지표로 보기";
+    box.appendChild(a);
+  }
+};
+window.__flute3d = { ready:false };
+setTimeout(function (){
+  if (!window.__flute3d.ready && !window.__flute3d.failed) window.flute3dFail("3D 화면을 불러오지 못했어요. 네트워크를 확인하거나 2D 운지표를 이용해 주세요.");
+}, 15000);
+</script>
+<script nomodule>window.__flute3d.failed = true; window.flute3dFail("이 브라우저는 3D 보기를 지원하지 않아요. 최신 브라우저에서 열거나 2D 운지표를 이용해 주세요.");</script>
+
+<script type="module" onerror="window.__flute3d.failed = true; window.flute3dFail('3D 화면을 불러오지 못했어요. 2D 운지표를 이용해 주세요.')">
+/* =====================================================================
+   1. 운지 데이터 — index.html과 반드시 같아야 합니다.
+      바꿀 때는 두 파일을 함께 고치고 `node qa/check-3d-data.mjs`로 확인하세요.
+   ===================================================================== */
+/* @DATA-SYNC-START */
+const KEY_IDS = ["thumbBb","thumbB","L1","L2","L3","gis","bbSide","tr1","tr2","R1","R2","R3","eb","lowCis","lowC"];
+const NOTES = [
+// id, 표시명, 한글 계이름, midi, 옥타브, 누르는 키 배열, 대체운지 배열(없으면 []), 팁(없으면 "")
+{id:"C4",  name:"C4",        ko:"도",        midi:60, oct:1, keys:["thumbB","L1","L2","L3","R1","R2","R3","lowC"], alt:[], tip:"오른손 새끼로 C 롤러를 누르면 C# 패드도 기계가 함께 닫아줘요. E♭키는 누르지 않아요!"},
+{id:"Cs4", name:"C♯4/D♭4",   ko:"도♯/레♭",   midi:61, oct:1, keys:["thumbB","L1","L2","L3","R1","R2","R3","lowCis"], alt:[], tip:"새끼손가락을 C♯ 롤러에. E♭키는 누르지 않아요."},
+{id:"D4",  name:"D4",        ko:"레",        midi:62, oct:1, keys:["thumbB","L1","L2","L3","R1","R2","R3"], alt:[], tip:"1·2옥타브에서 E♭키를 떼는 음은 C4·C♯4·D4·D5 4개예요. (3옥타브의 B♭6·B6·C7도 떼요)"},
+{id:"Ds4", name:"D♯4/E♭4",   ko:"레♯/미♭",   midi:63, oct:1, keys:["thumbB","L1","L2","L3","R1","R2","R3","eb"], alt:[], tip:"여섯 손가락 전부 + E♭키."},
+{id:"E4",  name:"E4",        ko:"미",        midi:64, oct:1, keys:["thumbB","L1","L2","L3","R1","R2","eb"], alt:[], tip:""},
+{id:"F4",  name:"F4",        ko:"파",        midi:65, oct:1, keys:["thumbB","L1","L2","L3","R1","eb"], alt:[], tip:""},
+{id:"Fs4", name:"F♯4/G♭4",   ko:"파♯/솔♭",   midi:66, oct:1, keys:["thumbB","L1","L2","L3","R3","eb"], alt:[{name:"트릴용(R2)", keys:["thumbB","L1","L2","L3","R2","eb"]}], tip:"오른손 '약지'(R3)를 써요. 중지(R2)는 트릴 전용."},
+{id:"G4",  name:"G4",        ko:"솔",        midi:67, oct:1, keys:["thumbB","L1","L2","L3","eb"], alt:[], tip:""},
+{id:"Gs4", name:"G♯4/A♭4",   ko:"솔♯/라♭",   midi:68, oct:1, keys:["thumbB","L1","L2","L3","gis","eb"], alt:[], tip:"왼손 새끼로 G♯ 레버."},
+{id:"A4",  name:"A4",        ko:"라",        midi:69, oct:1, keys:["thumbB","L1","L2","eb"], alt:[], tip:""},
+{id:"As4", name:"A♯4/B♭4",   ko:"라♯/시♭",   midi:70, oct:1, keys:["thumbB","L1","R1","eb"], alt:[{name:"엄지 B♭(브리치알디)", keys:["thumbBb","L1","eb"]},{name:"사이드 레버", keys:["thumbB","L1","bbSide","eb"]}], tip:"기본은 1+1(왼검지+오른검지). 플랫 조성에서는 엄지 B♭이 편해요."},
+{id:"B4",  name:"B4",        ko:"시",        midi:71, oct:1, keys:["thumbB","L1","eb"], alt:[], tip:"엄지는 반드시 B키(안쪽 큰 키)."},
+{id:"C5",  name:"C5",        ko:"도",        midi:72, oct:2, keys:["L1","eb"], alt:[], tip:"엄지를 떼요!"},
+{id:"Cs5", name:"C♯5/D♭5",   ko:"도♯/레♭",   midi:73, oct:2, keys:["eb"], alt:[], tip:"전부 열고 E♭키만. 가장 '빈손' 운지."},
+{id:"D5",  name:"D5",        ko:"레",        midi:74, oct:2, keys:["thumbB","L2","L3","R1","R2","R3"], alt:[], tip:"왼손 검지(L1)를 들어요! E♭키도 누르지 않아요. (D4와 헷갈리기 쉬운 함정)"},
+{id:"Ds5", name:"D♯5/E♭5",   ko:"레♯/미♭",   midi:75, oct:2, keys:["thumbB","L2","L3","R1","R2","R3","eb"], alt:[{name:"학교 차트식(L1 내림)", keys:["thumbB","L1","L2","L3","R1","R2","R3","eb"]}], tip:"D5에서 E♭키만 추가. L1은 든 상태 유지."},
+{id:"E5",  name:"E5",        ko:"미",        midi:76, oct:2, keys:["thumbB","L1","L2","L3","R1","R2","eb"], alt:[], tip:"E4와 같아요."},
+{id:"F5",  name:"F5",        ko:"파",        midi:77, oct:2, keys:["thumbB","L1","L2","L3","R1","eb"], alt:[], tip:"F4와 같아요."},
+{id:"Fs5", name:"F♯5/G♭5",   ko:"파♯/솔♭",   midi:78, oct:2, keys:["thumbB","L1","L2","L3","R3","eb"], alt:[{name:"트릴용(R2)", keys:["thumbB","L1","L2","L3","R2","eb"]}], tip:""},
+{id:"G5",  name:"G5",        ko:"솔",        midi:79, oct:2, keys:["thumbB","L1","L2","L3","eb"], alt:[], tip:""},
+{id:"Gs5", name:"G♯5/A♭5",   ko:"솔♯/라♭",   midi:80, oct:2, keys:["thumbB","L1","L2","L3","gis","eb"], alt:[], tip:""},
+{id:"A5",  name:"A5",        ko:"라",        midi:81, oct:2, keys:["thumbB","L1","L2","eb"], alt:[], tip:""},
+{id:"As5", name:"A♯5/B♭5",   ko:"라♯/시♭",   midi:82, oct:2, keys:["thumbB","L1","R1","eb"], alt:[{name:"엄지 B♭(브리치알디)", keys:["thumbBb","L1","eb"]},{name:"사이드 레버", keys:["thumbB","L1","bbSide","eb"]}], tip:""},
+{id:"B5",  name:"B5",        ko:"시",        midi:83, oct:2, keys:["thumbB","L1","eb"], alt:[], tip:""},
+{id:"C6",  name:"C6",        ko:"도",        midi:84, oct:3, keys:["L1","eb"], alt:[], tip:"C5와 같아요. 엄지는 뗀 상태."},
+{id:"Cs6", name:"C♯6/D♭6",   ko:"도♯/레♭",   midi:85, oct:3, keys:["eb"], alt:[], tip:""},
+{id:"D6",  name:"D6",        ko:"레",        midi:86, oct:3, keys:["thumbB","L2","L3","eb"], alt:[], tip:"D5와 반대로 E♭키를 '누르고', 오른손은 전부 열어요. (최대 함정 노트!)"},
+{id:"Ds6", name:"D♯6/E♭6",   ko:"레♯/미♭",   midi:87, oct:3, keys:["thumbB","L1","L2","L3","gis","R1","R2","R3","eb"], alt:[], tip:"E♭4 운지에 G♯ 레버를 추가한 형태."},
+{id:"E6",  name:"E6",        ko:"미",        midi:88, oct:3, keys:["thumbB","L1","L2","R1","R2","eb"], alt:[], tip:"E5에서 왼손 약지(L3)를 들어요. 양손 약지가 모두 뗀 모양이 돼요."},
+{id:"F6",  name:"F6",        ko:"파",        midi:89, oct:3, keys:["thumbB","L1","L3","R1","eb"], alt:[], tip:"F5에서 왼손 중지(L2)를 들어요."},
+{id:"Fs6", name:"F♯6/G♭6",   ko:"파♯/솔♭",   midi:90, oct:3, keys:["thumbB","L1","L3","R3","eb"], alt:[], tip:"엄지는 반드시 B키. (B♭ 레버를 쓰면 이 음이 잘 안 나요)"},
+{id:"G6",  name:"G6",        ko:"솔",        midi:91, oct:3, keys:["L1","L2","L3","eb"], alt:[], tip:"G5에서 엄지만 떼요."},
+{id:"Gs6", name:"G♯6/A♭6",   ko:"솔♯/라♭",   midi:92, oct:3, keys:["L2","L3","gis","eb"], alt:[], tip:"엄지도 L1도 뗀 상태 + G♯ 레버."},
+{id:"A6",  name:"A6",        ko:"라",        midi:93, oct:3, keys:["thumbB","L2","R1","eb"], alt:[], tip:"엄지+왼손 중지+오른손 검지."},
+{id:"As6", name:"A♯6/B♭6",   ko:"라♯/시♭",   midi:94, oct:3, keys:["thumbB","R1","tr1"], alt:[], tip:"첫 번째 트릴키(D트릴) 사용! E♭키는 누르지 않아요."},
+{id:"B6",  name:"B6",        ko:"시",        midi:95, oct:3, keys:["thumbB","L1","L3","tr2"], alt:[], tip:"두 번째 트릴키(D♯트릴) 사용. 오른손 본열은 전부 열어요."},
+{id:"C7",  name:"C7",        ko:"도",        midi:96, oct:3, keys:["L1","L2","L3","gis","R1"], alt:[], tip:"엄지를 떼고 G♯ 레버 + 오른손 검지. (B풋 악기는 기즈모 키 추가 — 이 앱은 C풋 기준)"}
+];
+const ARIA_FINGER = {
+  thumbB:"왼손 엄지(B키)", thumbBb:"왼손 엄지(B♭ 레버)",
+  L1:"왼손 검지", L2:"왼손 중지", L3:"왼손 약지", gis:"왼손 새끼(G♯ 레버)",
+  R1:"오른손 검지", R2:"오른손 중지", R3:"오른손 약지",
+  eb:"오른손 새끼(E♭ 키)", lowCis:"오른손 새끼(C♯ 롤러)", lowC:"오른손 새끼(C 롤러)",
+  bbSide:"오른손 검지 옆면(사이드 B♭)", tr1:"오른손 검지 옆면(D 트릴키)", tr2:"오른손 검지 옆면(D♯ 트릴키)"
+};
+const KEY_GROUP = Object.freeze({
+  thumbBb:"thumb",thumbB:"thumb",L1:"left",L2:"left",L3:"left",gis:"pinky",
+  bbSide:"trill",tr1:"trill",tr2:"trill",R1:"right",R2:"right",R3:"right",
+  eb:"pinky",lowCis:"pinky",lowC:"pinky"
+});
+/* @DATA-SYNC-END */
+
+const SIDE_KEYS = ["bbSide","tr1","tr2"];
+const OCT_TITLES = { 1:"1옥타브 (낮은 음)", 2:"2옥타브 (가운데 음)", 3:"3옥타브 (높은 음)" };
+const GROUP_HEX = { thumb:0xe74c3c, left:0x3498db, right:0x2ecc71, trill:0xf39c12, pinky:0x9b59b6 };
+const noteById = id => NOTES.find(n => n.id === id);
+const activeKeys = (note, altIndex) => (altIndex >= 0 && note.alt[altIndex]) ? note.alt[altIndex].keys : note.keys;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* =====================================================================
+   2. 앱 상태 (2D 앱의 appState와 같은 의미: 음 · 대체 운지 · 보기 영역)
+   ===================================================================== */
+const state = {
+  noteId:null, altIndex:-1, prevKeys:[],
+  region:"auto",          // auto | all | left | right | foot | free(사용자가 직접 돌린 상태)
+  view:"player",          // player | mirror | top
+  opts:{ hands:true, ghost:false, diff:true, slow:false }
+};
+let speed = 1;
+let viewer = null;
+const autoplay = { playing:false, timer:null, queue:[], idx:0 };
+
+/* 바뀐 키가 몰린 영역 — 2D 앱 deriveCameraPreset과 같은 규칙 */
+function deriveRegion(changed){
+  if (!changed.length) return "hands";
+  const foot = changed.filter(k => ["eb","lowCis","lowC"].includes(k)).length;
+  const left = changed.filter(k => ["thumbBb","thumbB","L1","L2","L3","gis"].includes(k)).length;
+  const right = changed.filter(k => ["R1","R2","R3","bbSide","tr1","tr2"].includes(k)).length;
+  if (foot && !left && right <= foot) return "foot";
+  if (left > right) return "left";
+  if (right > left) return "right";
+  return "hands";
+}
+
+/* =====================================================================
+   3. 3D 뷰어 — Three.js 장면 · 플루트 · 손 · 손가락 IK · 카메라
+      좌표: 단위 cm, 플루트 축 = X(머리관 0 → 풋 67), 위 = +Y, 연주자 쪽 = +Z, 관객 쪽 = −Z
+   ===================================================================== */
+function createViewer(THREE, { OrbitControls, RoomEnvironment, RoundedBoxGeometry }, stageEl){
+  const AUD = -1;                 // 관객(거울) 방향 Z 부호
+  const R = 0.95;                 // 관 반지름
+  const X_AXIS = new THREE.Vector3(1,0,0), Y_AXIS = new THREE.Vector3(0,1,0);
+  const deg = d => d * Math.PI / 180;
+  // φ: 0 = 관 위쪽(+Y), 양수 = 관객 쪽으로 회전
+  const ringPos = (x, phi, r) => new THREE.Vector3(x, r*Math.cos(deg(phi)), AUD*r*Math.sin(deg(phi)));
+  const ringNormal = phi => new THREE.Vector3(0, Math.cos(deg(phi)), AUD*Math.sin(deg(phi)));
+  const ringTangent = phi => new THREE.Vector3().crossVectors(X_AXIS, ringNormal(phi)).normalize();
+
+  /* ----- 렌더러 · 장면 · 조명 ----- */
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:"high-performance" });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  const canvas = renderer.domElement;
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-label", "3D 플루트 운지 장면");
+  stageEl.prepend(canvas);
+
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.7;
+  pmrem.dispose();
+
+  const camera = new THREE.PerspectiveCamera(31, 1, 0.5, 400);
+  camera.position.set(40, 25, 60);
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true; controls.dampingFactor = 0.09;
+  controls.minDistance = 6; controls.maxDistance = 200;
+  controls.target.set(40, 0, 0);
+
+  scene.add(new THREE.HemisphereLight(0xe6edff, 0x3a3430, 0.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.55);
+  sun.position.set(30, 45, -30);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left:-45, right:45, top:30, bottom:-30, near:5, far:140 });
+  sun.shadow.bias = -0.0005; sun.shadow.normalBias = 0.02;
+  sun.target.position.set(38, 0, 0);
+  scene.add(sun, sun.target);
+  const fill = new THREE.DirectionalLight(0xb9cff0, 0.55); fill.position.set(60, 10, 40); scene.add(fill);
+
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(220, 120), new THREE.ShadowMaterial({ opacity:0.09 }));
+  floor.rotation.x = -Math.PI/2; floor.position.set(38, -9.5, 0); floor.receiveShadow = true; scene.add(floor);
+
+  const MAT = {
+    silver: new THREE.MeshStandardMaterial({ color:0xdfe3e8, metalness:1.0, roughness:0.30 }),
+    silverKey: () => new THREE.MeshStandardMaterial({ color:0xe6eaef, metalness:1.0, roughness:0.22, emissive:0x000000, emissiveIntensity:0 }),
+    dark: new THREE.MeshStandardMaterial({ color:0x15181c, metalness:0.2, roughness:0.6 }),
+    pad: new THREE.MeshStandardMaterial({ color:0xd9c9a3, metalness:0, roughness:0.9 }),
+    skin: new THREE.MeshStandardMaterial({ color:0xe6b48d, metalness:0, roughness:0.72 }),
+    nail: new THREE.MeshStandardMaterial({ color:0xf5d8c6, metalness:0, roughness:0.45 }),
+  };
+
+  function cylinderBetween(a, b, r, mat, segs = 14){
+    const dir = new THREE.Vector3().subVectors(b, a); const len = dir.length();
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, segs), mat);
+    m.position.copy(a).addScaledVector(dir, 0.5);
+    m.quaternion.setFromUnitVectors(Y_AXIS, dir.normalize());
+    m.castShadow = true; return m;
+  }
+  function tubeX(x0, x1, r, mat, segs = 48){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, x1 - x0, segs), mat);
+    m.rotation.z = -Math.PI/2; m.position.x = (x0 + x1) / 2; m.castShadow = true; m.receiveShadow = true; return m;
+  }
+
+  /* ----- 플루트: 관 · 조인트 링 · 립 플레이트 · 로드와 포스트 · 보조 키컵 ----- */
+  const flute = new THREE.Group(); flute.name = "flute"; scene.add(flute);
+  flute.add(tubeX(0.6, 66.8, R, MAT.silver));
+  for (const [x0, x1] of [[0,1.1],[21.6,22.7],[50.9,51.9],[66.2,67.2]]) flute.add(tubeX(x0, x1, R + 0.09, MAT.silver, 48));
+  const crown = new THREE.Mesh(new THREE.SphereGeometry(R + 0.09, 32, 16, 0, Math.PI*2, 0, Math.PI/2), MAT.silver);
+  crown.rotation.z = Math.PI/2; crown.scale.set(1, 0.55, 1); crown.castShadow = true; flute.add(crown);
+  {
+    const phi = -14; // 립 플레이트: 연주자 쪽으로 살짝
+    const plate = new THREE.Mesh(new THREE.SphereGeometry(1, 36, 18), MAT.silver);
+    plate.scale.set(2.5, 0.42, 1.55);
+    plate.position.copy(ringPos(5.6, phi, R + 0.02));
+    plate.quaternion.setFromUnitVectors(Y_AXIS, ringNormal(phi));
+    plate.castShadow = true; flute.add(plate);
+    const hole = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.3, 28), MAT.dark);
+    hole.scale.set(1.0, 1, 0.8);
+    hole.position.copy(ringPos(5.6, phi, R + 0.36)); hole.quaternion.copy(plate.quaternion); flute.add(hole);
+  }
+  const CUP_PHI = 8, ROD_PHI = 70, ROD_R = R + 0.42;
+  function addRod(phi, x0, x1, posts){
+    flute.add(cylinderBetween(ringPos(x0, phi, ROD_R), ringPos(x1, phi, ROD_R), 0.11, MAT.silver, 10));
+    for (const px of posts) flute.add(cylinderBetween(ringPos(px, phi, R - 0.1), ringPos(px, phi, ROD_R), 0.12, MAT.silver, 10));
+  }
+  addRod(ROD_PHI, 23.0, 50.6, [23.4, 27.6, 31.2, 34.8, 38.2, 41.4, 44.8, 48.0, 50.3]); // 본체 로드(관객 쪽)
+  addRod(-150, 27.6, 32.4, [27.9, 32.1]);       // 엄지 키 로드(뒷면·연주자 쪽)
+  addRod(-84, 37.6, 48.9, [37.9, 42.9, 48.6]);  // G♯·사이드·트릴 레버 로드
+  addRod(-100, 51.3, 55.9, [51.6, 55.6]);       // 풋 E♭ 키 로드
+  function staticCup(x, phi, r){
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(r, r*0.92, 0.24, 32), MAT.silver);
+    cup.position.copy(ringPos(x, phi, R + 0.28)); cup.quaternion.setFromUnitVectors(Y_AXIS, ringNormal(phi)); cup.castShadow = true;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(r*0.76, 0.055, 8, 36), MAT.silver);
+    rim.position.copy(ringPos(x, phi, R + 0.41)); rim.quaternion.copy(cup.quaternion);
+    flute.add(cup, rim);
+  }
+  staticCup(24.2, 60, 0.70); staticCup(31.1, CUP_PHI, 0.72);
+  staticCup(39.3, 62, 0.80); staticCup(44.9, 62, 0.60); staticCup(47.9, 62, 0.60);
+  staticCup(53.6, CUP_PHI, 0.95); staticCup(57.0, CUP_PHI, 0.95); staticCup(60.4, CUP_PHI, 0.95);
+
+  /* ----- 15개 키: x 위치(cm), 터치피스 각도 φ, 회전축(로드) 각도 ----- */
+  const KEY3D = {
+    thumbBb:{x:28.6, phi:-104, rodPhi:-150, kind:"plate", w:1.5, h:1.0},
+    thumbB: {x:30.8, phi:-118, rodPhi:-150, kind:"plate", w:2.5, h:1.4},
+    L1:{x:29.2, phi:CUP_PHI, rodPhi:ROD_PHI, kind:"cup", r:0.95},
+    L2:{x:33.0, phi:CUP_PHI, rodPhi:ROD_PHI, kind:"cup", r:0.95},
+    L3:{x:36.3, phi:CUP_PHI, rodPhi:ROD_PHI, kind:"cup", r:0.95},
+    gis:{x:38.5, phi:-34, rodPhi:-84, kind:"plate", w:1.7, h:1.0},
+    bbSide:{x:41.3, phi:-40, rodPhi:-84, kind:"plate", w:1.1, h:0.75},
+    tr1:{x:44.4, phi:-40, rodPhi:-84, kind:"plate", w:1.1, h:0.75},
+    tr2:{x:47.4, phi:-40, rodPhi:-84, kind:"plate", w:1.1, h:0.75},
+    R1:{x:43.0, phi:CUP_PHI, rodPhi:ROD_PHI, kind:"cup", r:0.95},
+    R2:{x:46.0, phi:CUP_PHI, rodPhi:ROD_PHI, kind:"cup", r:0.95},
+    R3:{x:49.0, phi:CUP_PHI, rodPhi:ROD_PHI, kind:"cup", r:0.95},
+    eb:{x:51.6, phi:-64, rodPhi:-100, kind:"plate", w:1.9, h:1.4},
+    lowCis:{x:53.5, phi:-70, kind:"roller"},
+    lowC:{x:55.3, phi:-70, kind:"roller"}
+  };
+  const TOUCH_R = R + 0.62;
+  const keys = {};
+  function buildKey(id, def){
+    const g = new THREE.Group(); g.name = "key_" + id;
+    const mat = MAT.silverKey();
+    const normal = ringNormal(def.phi);
+    let pivot, touch;
+    if (def.kind === "roller"){
+      pivot = ringPos(def.x, def.phi, R + 0.52); touch = pivot.clone();
+      g.position.copy(pivot);
+      const roller = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 1.3, 20), mat);
+      roller.quaternion.setFromUnitVectors(Y_AXIS, ringTangent(def.phi)); roller.castShadow = true; g.add(roller);
+      const axle = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 1.7), MAT.silver);
+      axle.position.addScaledVector(normal, -0.32);
+      axle.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X_AXIS, normal, ringTangent(def.phi))); g.add(axle);
+      touch.addScaledVector(normal, 0.34);
+    } else {
+      pivot = ringPos(def.x, def.rodPhi, ROD_R); touch = ringPos(def.x, def.phi, TOUCH_R);
+      g.position.copy(pivot);
+      const off = touch.clone().sub(pivot);
+      if (def.kind === "cup"){
+        const cup = new THREE.Mesh(new THREE.CylinderGeometry(def.r, def.r*0.92, 0.26, 36), mat);
+        cup.quaternion.setFromUnitVectors(Y_AXIS, normal); cup.position.copy(off); cup.castShadow = true;
+        const rim = new THREE.Mesh(new THREE.TorusGeometry(def.r*0.76, 0.06, 8, 40), mat);
+        rim.quaternion.copy(cup.quaternion); rim.position.copy(off).addScaledVector(normal, 0.14);
+        const pad = new THREE.Mesh(new THREE.CylinderGeometry(def.r*0.9, def.r*0.9, 0.12, 32), MAT.pad);
+        pad.quaternion.copy(cup.quaternion); pad.position.copy(off).addScaledVector(normal, -0.17);
+        g.add(cup, rim, pad);
+        touch.addScaledVector(normal, 0.13);
+      } else {
+        const plate = new THREE.Mesh(new RoundedBoxGeometry(def.w, 0.16, def.h, 3, 0.07), mat);
+        plate.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X_AXIS, normal, ringTangent(def.phi)));
+        plate.position.copy(off); plate.castShadow = true; g.add(plate);
+        touch.addScaledVector(normal, 0.08);
+      }
+      g.add(cylinderBetween(new THREE.Vector3(0,0,0), off.clone().addScaledVector(normal, -0.12), 0.11, MAT.silver, 10));
+      // 눌림 회전 방향: 터치피스가 관 축에 가까워지는 쪽
+      const radiusAfter = a => { const c = Math.cos(a), s = Math.sin(a); const y = off.y*c - off.z*s, z = off.y*s + off.z*c; return Math.hypot(pivot.y + y, pivot.z + z); };
+      g.userData.sign = radiusAfter(0.2) < radiusAfter(-0.2) ? 1 : -1;
+    }
+    flute.add(g);
+    keys[id] = { id, def, group:g, mat, touch, normal, press:0, target:0, color:new THREE.Color(GROUP_HEX[KEY_GROUP[id]]) };
+  }
+  KEY_IDS.forEach(id => buildKey(id, KEY3D[id]));
+
+  /* ----- 손: 절차적 메시 + 관절 계층 (본 이름은 Blender 교체 시 그대로 사용 — docs/3d-view.md) ----- */
+  const FINGER_SPEC = {
+    index:{ len:[3.7,2.3,2.0], r:0.76, kx:-2.8 },
+    middle:{len:[4.0,2.5,2.1], r:0.78, kx:-0.95 },
+    ring:{  len:[3.7,2.3,2.0], r:0.73, kx: 0.95 },
+    pinky:{ len:[2.9,1.9,1.6], r:0.64, kx: 2.75 },
+  };
+  const LIMITS = {
+    mcpAbd:[-0.65,0.65], mcpFlex:[-0.45,1.65], pip:[-0.05,1.95], dip:[-0.15,1.45],
+    cmcYaw:[-1.2,1.2], cmcPitch:[-1.0,1.3], tmcp:[-0.4,1.1]
+  };
+  const REST = { mcpAbd:0, mcpFlex:0.35, pip:0.65, dip:0.3, cmcYaw:0, cmcPitch:0.2, tmcp:0.3 };
+
+  function segmentMesh(len, r, mat, withNail){
+    const g = new THREE.Group();
+    const cap = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 18), mat);
+    cap.rotation.x = Math.PI/2; cap.position.z = len/2; cap.castShadow = true; cap.receiveShadow = true;
+    g.add(cap);
+    if (withNail){
+      const nail = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), MAT.nail);
+      nail.scale.set(r*0.62, r*0.22, r*0.80); nail.position.set(0, r*0.78, len*0.78); g.add(nail);
+    }
+    return g;
+  }
+  function makeFinger(hand, name, spec){
+    const [l0, l1, l2] = spec.len, r = spec.r;
+    const mcp = new THREE.Group(); mcp.name = `${hand}_${name}_mcp`; mcp.rotation.order = "YXZ";
+    const pip = new THREE.Group(); pip.name = `${hand}_${name}_pip`;
+    const dip = new THREE.Group(); dip.name = `${hand}_${name}_dip`;
+    const tip = new THREE.Object3D(); tip.name = `${hand}_${name}_tip`;
+    mcp.add(segmentMesh(l0, r, MAT.skin, false)); pip.position.z = l0;
+    pip.add(segmentMesh(l1, r*0.95, MAT.skin, false)); dip.position.z = l1;
+    dip.add(segmentMesh(l2, r*0.88, MAT.skin, true)); tip.position.z = l2;
+    mcp.add(pip); pip.add(dip); dip.add(tip);
+    const knuckle = new THREE.Mesh(new THREE.SphereGeometry(r*1.05, 18, 12), MAT.skin); knuckle.castShadow = true; mcp.add(knuckle);
+    const dofs = [
+      { get:() => mcp.rotation.y, set:v => mcp.rotation.y = v, lim:LIMITS.mcpAbd, rest:REST.mcpAbd, w:1.2 },
+      { get:() => mcp.rotation.x, set:v => mcp.rotation.x = v, lim:LIMITS.mcpFlex, rest:REST.mcpFlex, w:1 },
+      { get:() => pip.rotation.x, set:v => pip.rotation.x = v, lim:LIMITS.pip, rest:REST.pip, w:1 },
+      { get:() => dip.rotation.x, set:v => dip.rotation.x = v, lim:LIMITS.dip, rest:REST.dip, w:1 },
+    ];
+    dofs.forEach(d => d.set(d.rest));
+    return { name, root:mcp, dip, tip, dofs, distal:l2, r, joints:[mcp, pip, dip] };
+  }
+  function makeThumb(hand){
+    const [l0, l1] = [4.3, 3.5], r = 0.92;
+    const cmc = new THREE.Group(); cmc.name = `${hand}_thumb_cmc`; cmc.rotation.order = "YXZ";
+    const mcp = new THREE.Group(); mcp.name = `${hand}_thumb_mcp`;
+    const ip  = new THREE.Group(); ip.name  = `${hand}_thumb_ip`;
+    const tip = new THREE.Object3D(); tip.name = `${hand}_thumb_tip`;
+    cmc.add(segmentMesh(l0, r, MAT.skin, false)); mcp.position.z = l0;
+    mcp.add(segmentMesh(l1, r*0.9, MAT.skin, true)); ip.position.z = l1;
+    cmc.add(mcp); mcp.add(ip); ip.add(tip);
+    const base = new THREE.Mesh(new THREE.SphereGeometry(r*1.15, 18, 12), MAT.skin); base.castShadow = true; cmc.add(base);
+    const dofs = [
+      { get:() => cmc.rotation.y, set:v => cmc.rotation.y = v, lim:LIMITS.cmcYaw, rest:REST.cmcYaw, w:0.8 },
+      { get:() => cmc.rotation.x, set:v => cmc.rotation.x = v, lim:LIMITS.cmcPitch, rest:REST.cmcPitch, w:1 },
+      { get:() => mcp.rotation.x, set:v => mcp.rotation.x = v, lim:LIMITS.tmcp, rest:REST.tmcp, w:1 },
+    ];
+    dofs.forEach(d => d.set(d.rest));
+    return { name:"thumb", root:cmc, dip:mcp, tip, dofs, distal:l1, r, joints:[cmc, mcp] };
+  }
+  // 손 로컬 좌표: +Z = 손가락 방향, −Y = 손바닥(굽힘) 쪽. mirror=true면 엄지가 +X 쪽
+  function buildHand(side, mirror, thumbDir){
+    const m = mirror ? -1 : 1;
+    const hand = new THREE.Group(); hand.name = `hand_${side}`;
+    const palm = new THREE.Mesh(new RoundedBoxGeometry(6.8, 2.1, 7.2, 5, 1.05), MAT.skin);
+    palm.position.set(0.1*m, 0, 0); palm.castShadow = true; palm.receiveShadow = true; hand.add(palm);
+    const wrist = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 1.9, 4.0, 26), MAT.skin);
+    wrist.rotation.x = Math.PI/2; wrist.position.set(0.1*m, 0.0, -5.4); wrist.castShadow = true; hand.add(wrist);
+    const fingers = {};
+    for (const [name, spec] of Object.entries(FINGER_SPEC)){
+      const f = makeFinger(side, name, spec);
+      f.root.position.set(spec.kx * m, 0.05, 3.7);
+      hand.add(f.root); fingers[name] = f;
+    }
+    const th = makeThumb(side);
+    const thumbBase = new THREE.Group(); thumbBase.name = `${side}_thumb_base`;
+    thumbBase.position.set(-3.9 * m, -1.0, 0.4);
+    const zDir = thumbDir.clone().normalize();
+    const xDir = new THREE.Vector3().crossVectors(Y_AXIS, zDir).normalize();
+    const yDir = new THREE.Vector3().crossVectors(zDir, xDir).normalize();
+    thumbBase.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xDir, yDir, zDir));
+    thumbBase.add(th.root); hand.add(thumbBase); fingers.thumb = th;
+    scene.add(hand);
+    return { side, group:hand, fingers };
+  }
+  const hands = {
+    L: buildHand("L", false, new THREE.Vector3(-0.30, -0.50, 0.80)),
+    R: buildHand("R", true, new THREE.Vector3(-0.60, -0.40, 0.70))
+  };
+  /* 손 배치 (실제 플루트 그립)
+     왼손: 손바닥이 연주자 쪽. 손가락은 관객 쪽에서 올라와 관 위를 넘어 키컵을 누르고, 엄지는 관 아래로 돌아 뒷면 엄지 키로.
+     오른손: 손등이 연주자 쪽. 손가락은 연주자 쪽에서 관 위를 넘어 키컵을 누르고, 엄지는 관 아래·연주자 쪽을 받침.
+     center = 손바닥 중심, f = 손가락 방향, p = 굽힘(손바닥 안쪽) 방향 */
+  const HAND_POSE = {
+    L: { center:new THREE.Vector3(33.3, -1.55, -6.1), f:new THREE.Vector3(0, 0.92, 0.39),  p:new THREE.Vector3(0, -0.39, 0.92) },
+    R: { center:new THREE.Vector3(46.9, -1.55, 6.1),  f:new THREE.Vector3(0, 0.92, -0.39), p:new THREE.Vector3(0, -0.39, -0.92) },
+  };
+  function placeHand(side, shiftX = 0){
+    const h = hands[side], P = HAND_POSE[side];
+    const z = P.f.clone().normalize(), y = P.p.clone().negate().normalize();
+    const x = new THREE.Vector3().crossVectors(y, z).normalize();
+    h.group.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+    h.group.position.copy(P.center); h.group.position.x += shiftX;
+    h.group.updateMatrixWorld(true);
+  }
+  placeHand("L"); placeHand("R");
+
+  /* ----- 손가락 포즈 솔버: 좌표 하강 IK + 접근 방향 + 휴식 자세 정규화 + 관 관통 벌점 ----- */
+  const _tip = new THREE.Vector3(), _dip = new THREE.Vector3(), _want = new THREE.Vector3(), _j = new THREE.Vector3();
+  function solveFinger(f, target, approach){
+    const dofs = f.dofs;
+    let wApproach = 0.5, wRest = 0.02;
+    _want.copy(target).addScaledVector(approach, f.distal);
+    const TUBE_CLEAR = R + f.r * 0.95;
+    const cost = () => {
+      f.root.updateMatrixWorld(true);
+      f.tip.getWorldPosition(_tip); f.dip.getWorldPosition(_dip);
+      let c = _tip.distanceTo(target) + wApproach * _dip.distanceTo(_want);
+      for (const d of dofs) c += wRest * d.w * Math.abs(d.get() - d.rest);
+      for (const j of f.joints){
+        j.getWorldPosition(_j); const rad = Math.hypot(_j.y, _j.z);
+        if (_j.x > 0 && _j.x < 67 && rad < TUBE_CLEAR) c += (TUBE_CLEAR - rad) * 2.5;
+      }
+      const radT = Math.hypot(_tip.y, _tip.z); if (radT < TUBE_CLEAR * 0.92) c += (TUBE_CLEAR * 0.92 - radT) * 2.5;
+      return c;
+    };
+    const run = () => {
+      let best = cost(), step = 0.4;
+      for (let it = 0; it < 90 && best > 0.015; it++){
+        let improved = false;
+        for (const d of dofs){
+          const cur = d.get();
+          for (const s of [step, -step]){
+            const v = clamp(cur + s, d.lim[0], d.lim[1]); if (v === cur) continue;
+            d.set(v); const c = cost();
+            if (c < best - 1e-7){ best = c; improved = true; break; } else d.set(cur);
+          }
+        }
+        if (!improved){ step *= 0.5; if (step < 0.003) break; }
+      }
+      return best;
+    };
+    let best = run();
+    if (best > 0.6){ // 지역 최소 탈출: 휴식 자세에서 다시
+      const saved = dofs.map(d => d.get());
+      dofs.forEach(d => d.set(d.rest)); const b2 = run();
+      if (b2 >= best) dofs.forEach((d, i) => d.set(saved[i]));
+    }
+    wApproach = 0.08; wRest = 0.004; run(); // 2차: 형태는 유지한 채 손끝 위치만 정밀 보정
+  }
+  /* 손가락 ↔ 키 (2D 앱 FINGER_MAP과 같은 의미) */
+  const FINGER_KEYS = {
+    L: { index:["L1"], middle:["L2"], ring:["L3"], pinky:["gis"], thumb:["thumbBb","thumbB"] },
+    R: { index:["R1"], middle:["R2"], ring:["R3"], pinky:["lowC","lowCis","eb"], thumb:[] }
+  };
+  const APPROACH = { // 손끝이 어느 방향에서 키로 내려오는지
+    cupL: new THREE.Vector3(0, 0.90, -0.44).normalize(),
+    cupR: new THREE.Vector3(0, 0.90, 0.44).normalize(),
+    gis:  new THREE.Vector3(0, 0.80, -0.60).normalize(),
+    side: new THREE.Vector3(0, 0.75, 0.66).normalize(),
+    foot: new THREE.Vector3(0, 0.60, 0.80).normalize(),
+    thumbL: new THREE.Vector3(0, -0.55, -0.83).normalize(),
+  };
+  const LIFT = 0.85; // 뗀 손가락이 키 위에 떠 있는 높이(cm)
+  function fingerTarget(keyId, f, pressed, side){
+    const k = keys[keyId];
+    const t = k.touch.clone().addScaledVector(k.normal, f.r*0.85 + (pressed ? 0 : LIFT));
+    let a;
+    if (keyId.startsWith("thumb")) a = APPROACH.thumbL;
+    else if (keyId === "gis") a = APPROACH.gis;
+    else if (SIDE_KEYS.includes(keyId)) a = APPROACH.side;
+    else if (["eb","lowCis","lowC"].includes(keyId)) a = APPROACH.foot;
+    else a = side === "L" ? APPROACH.cupL : APPROACH.cupR;
+    if (!pressed) a = a.clone().multiplyScalar(0.65).add(new THREE.Vector3(0, -0.1, side === "L" ? -0.55 : 0.55)).normalize();
+    return { t, a };
+  }
+  const RIGHT_THUMB_TARGET = { t: ringPos(45.0, -150, R + 0.92*0.9), a: new THREE.Vector3(0, -0.50, 0.87).normalize() };
+
+  /* ----- 트윈 · 필요할 때만 그리는 렌더 루프 ----- */
+  const easeOutCubic = p => 1 - Math.pow(1 - p, 3);
+  const easeInOut = p => p < .5 ? 4*p*p*p : 1 - Math.pow(-2*p + 2, 3) / 2;
+  const tweens = new Set();
+  let rafId = 0;
+  const requestRender = () => { if (!rafId) rafId = requestAnimationFrame(frame); };
+  function tween({ dur = 220, delay = 0, ease = easeOutCubic, update, done }){
+    const tw = { start: performance.now() + delay, dur: reduceMotion ? 0 : dur, ease, update, done, alive:true };
+    tweens.add(tw); requestRender(); return tw;
+  }
+  function stepTweens(now){
+    for (const tw of tweens){
+      if (!tw.alive){ tweens.delete(tw); continue; }
+      let p = tw.dur === 0 ? 1 : (now - tw.start) / tw.dur;
+      if (p < 0) continue;
+      if (p >= 1){ p = 1; tw.alive = false; }
+      tw.update(tw.ease(p));
+      if (!tw.alive){ tweens.delete(tw); tw.done && tw.done(); }
+    }
+  }
+  function finishAllTweens(){
+    for (const tw of [...tweens]){ tweens.delete(tw); if (tw.alive){ tw.alive = false; tw.update(1); tw.done && tw.done(); } }
+  }
+  function frame(now){
+    rafId = 0;
+    stepTweens(now);
+    const moved = controls.update();
+    renderer.render(scene, camera);
+    if (tweens.size || moved) requestRender();
+  }
+  controls.addEventListener("change", requestRender);
+
+  const jointTweens = new Map();
+  function animateFingerTo(f, from, delay){
+    const to = f.dofs.map(d => d.get());
+    const prev = jointTweens.get(f); if (prev) prev.alive = false;
+    f.dofs.forEach((d, i) => d.set(from[i]));
+    jointTweens.set(f, tween({ dur: 240 / speed, delay, update: p => f.dofs.forEach((d, i) => d.set(from[i] + (to[i] - from[i]) * p)) }));
+  }
+  function applyKeyVisual(k){
+    const g = k.group, s = k.press;
+    if (k.def.kind === "roller") g.position.copy(k.touch).addScaledVector(k.normal, -0.34 - 0.22*s);
+    else g.rotation.x = g.userData.sign * 0.22 * s;
+    k.mat.emissive.copy(k.color); k.mat.emissiveIntensity = 0.55 * s;
+    k.mat.color.setHex(0xe6eaef).lerp(k.color, 0.4 * s);
+  }
+  function setKeyPressed(id, pressed){
+    const k = keys[id]; const to = pressed ? 1 : 0; if (k.target === to) return;
+    k.target = to; const from = k.press;
+    if (k.tw) k.tw.alive = false;
+    k.tw = tween({ dur: 170 / speed, update: p => { k.press = from + (to - from) * p; applyKeyVisual(k); } });
+  }
+  const ringGroup = new THREE.Group(); scene.add(ringGroup);
+  function flashRing(k, on){ // 새로 누른 키 = 초록, 뗀 키 = 빨강 (2D 앱 changed-on/off와 같은 의미)
+    const geo = new THREE.TorusGeometry((k.def.r || 0.8) + 0.42, 0.07, 8, 48);
+    const mat = new THREE.MeshBasicMaterial({ color: on ? 0x18845b : 0xc23b32, transparent:true, opacity:0.95, depthWrite:false });
+    const m = new THREE.Mesh(geo, mat);
+    m.position.copy(k.touch).addScaledVector(k.normal, 0.25);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), k.normal);
+    ringGroup.add(m);
+    tween({ dur: 1300 / speed, ease: p => p, update: p => { m.scale.setScalar(1 + 0.45*p); mat.opacity = 0.95 * (1 - p); },
+      done: () => { ringGroup.remove(m); geo.dispose(); mat.dispose(); } });
+  }
+  let handShiftTw = null, shiftVisualR = 0;
+  function animateHandShift(shift){
+    const from = shiftVisualR;
+    placeHand("R", shift); // 솔버는 최종 위치 기준
+    if (Math.abs(shift - from) < 1e-3){ shiftVisualR = shift; return; }
+    if (handShiftTw) handShiftTw.alive = false;
+    handShiftTw = tween({ dur: 260 / speed, update: p => { shiftVisualR = from + (shift - from) * p; placeHand("R", shiftVisualR); } });
+  }
+
+  /* ----- 운지 표시: 키 눌림 → 오른손 위치 → 손가락 솔브 → 트윈 ----- */
+  let shownKeys = [];
+  function show(ks, { on = [], off = [], diff = false } = {}){
+    const before = new Set(shownKeys), after = new Set(ks);
+    KEY_IDS.forEach(id => setKeyPressed(id, after.has(id)));
+    if (diff){ on.forEach(id => flashRing(keys[id], true)); off.forEach(id => flashRing(keys[id], false)); }
+    animateHandShift(after.has("lowC") ? 2.4 : after.has("lowCis") ? 1.2 : 0); // 롤러로 뻗을 때 오른손이 풋 쪽으로
+    let stagger = 0;
+    for (const side of ["L","R"]){
+      for (const [fname, f] of Object.entries(hands[side].fingers)){
+        const from = f.dofs.map(d => d.get());
+        const pressedKey = FINGER_KEYS[side][fname].find(k => after.has(k));
+        let tgt;
+        if (side === "R" && fname === "thumb") tgt = RIGHT_THUMB_TARGET;
+        else if (pressedKey) tgt = fingerTarget(pressedKey, f, true, side);
+        else { const home = FINGER_KEYS[side][fname]; tgt = fingerTarget(home[home.length - 1], f, false, side); }
+        if (side === "R" && fname === "index"){ // 검지 옆면 겸직(사이드·트릴 레버)
+          const sideKey = SIDE_KEYS.find(k => after.has(k));
+          if (sideKey && pressedKey){ const lever = fingerTarget(sideKey, f, true, side); tgt = { t: tgt.t.clone().lerp(lever.t, 0.22), a: tgt.a }; }
+          else if (sideKey) tgt = fingerTarget(sideKey, f, true, side);
+        }
+        solveFinger(f, tgt.t, tgt.a);
+        const newlyPressed = pressedKey && !FINGER_KEYS[side][fname].some(k => before.has(k));
+        animateFingerTo(f, from, newlyPressed ? (stagger++) * 40 / speed : 0);
+      }
+    }
+    shownKeys = ks.slice();
+    requestRender();
+  }
+
+  /* ----- 카메라 프리셋 ----- */
+  const REGIONS = { all:[-2,69], hands:[21,60], left:[21,42], right:[40,60], foot:[48,68] };
+  const VIEWS = { player:{az:0, el:42, dx:0.06}, mirror:{az:180, el:28, dx:0.06}, top:{az:0, el:80, dx:0} };
+  let view = "player", framedRegion = "hands", camTw = null;
+  function frameFor(region){
+    const [x0, x1] = REGIONS[region];
+    const box = new THREE.Box3(new THREE.Vector3(x0, -8, -7), new THREE.Vector3(x1, 7, 10)); // 손목까지 포함
+    const center = box.getCenter(new THREE.Vector3());
+    const v = VIEWS[view]; const az = deg(v.az), el = deg(v.el);
+    const dir = new THREE.Vector3(v.dx, Math.sin(el), Math.cos(az) * Math.cos(el)).normalize();
+    const fwd = dir.clone().negate();
+    const right = new THREE.Vector3().crossVectors(Y_AXIS, fwd).normalize();
+    const up = new THREE.Vector3().crossVectors(fwd, right).normalize();
+    const vfov = deg(camera.fov), hfov = 2 * Math.atan(Math.tan(vfov/2) * camera.aspect);
+    let dist = 0; const c = new THREE.Vector3();
+    for (let i = 0; i < 8; i++){
+      c.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).sub(center);
+      const xr = c.dot(right), yr = c.dot(up), zr = c.dot(fwd);
+      dist = Math.max(dist, Math.abs(xr) / Math.tan(hfov/2) - zr, Math.abs(yr) / Math.tan(vfov/2) - zr);
+    }
+    dist *= 1.06;
+    center.y += 0.8; // 위쪽 오버레이(음 이름·시점 버튼)와 겹치지 않게 내용을 살짝 아래로
+    return { pos: center.clone().addScaledVector(dir, dist), target: center };
+  }
+  function frameRegion(region, immediate = false){
+    framedRegion = region;
+    const f = frameFor(region);
+    if (camTw){ camTw.alive = false; controls.enabled = true; }
+    if (immediate){ camera.position.copy(f.pos); controls.target.copy(f.target); controls.update(); requestRender(); return; }
+    const p0 = camera.position.clone(), t0 = controls.target.clone();
+    controls.enabled = false;
+    camTw = tween({ dur: 520, ease: easeInOut,
+      update: p => { camera.position.lerpVectors(p0, f.pos, p); controls.target.lerpVectors(t0, f.target, p); },
+      done: () => { controls.enabled = true; } });
+  }
+
+  /* ----- 크기 변화 · 컨텍스트 손실 ----- */
+  let userCameraHandler = null, keepFraming = () => true;
+  function resize(){
+    const w = stageEl.clientWidth || 1, h = stageEl.clientHeight || 1;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    if (keepFraming()) frameRegion(framedRegion, true);
+    requestRender();
+  }
+  new ResizeObserver(resize).observe(stageEl);
+  controls.addEventListener("start", () => { if (controls.enabled && userCameraHandler) userCameraHandler(); });
+  canvas.addEventListener("webglcontextlost", event => {
+    event.preventDefault();
+    window.flute3dFail("3D 화면이 잠시 멈췄어요. 새로고침해 주세요.");
+  });
+  resize();
+
+  return {
+    show,
+    frame: frameRegion,
+    get framedRegion(){ return framedRegion; },
+    setView(next){ view = next; },
+    setHandsVisible(on){ hands.L.group.visible = hands.R.group.visible = on; requestRender(); },
+    setGhost(on){
+      for (const m of [MAT.skin, MAT.nail]){ m.transparent = on; m.opacity = on ? 0.42 : 1; m.depthWrite = !on; m.needsUpdate = true; }
+      requestRender();
+    },
+    setLabel(text){ canvas.setAttribute("aria-label", text); },
+    snap(){ finishAllTweens(); requestRender(); },
+    onUserCamera(handler){ userCameraHandler = handler; },
+    keepFramingWhen(fn){ keepFraming = fn; },
+    debug:{ scene, camera, keys, hands }
+  };
+}
+
+/* =====================================================================
+   4. 화면(UI) — 2D 앱과 같은 컴포넌트·문구 규칙
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const icon = id => `<svg class="icon" aria-hidden="true"><use href="#icon-${id}"></use></svg>`;
+
+function renderNoteInfo(note, altIndex, ks){
+  const index = NOTES.indexOf(note);
+  const altTabs = note.alt.length ? `
+    <div class="alt-tabs" role="group" aria-label="대체 운지 선택">
+      <button class="alt-tab" data-alt="-1" aria-pressed="${altIndex < 0}">기본 운지</button>
+      ${note.alt.map((a, i) => `<button class="alt-tab" data-alt="${i}" aria-pressed="${altIndex === i}">${a.name}</button>`).join("")}
+    </div>` : "";
+  $("note-info").innerHTML = `
+    <div class="ni-main">
+      <div class="ni-title-row"><div class="ni-name">${note.ko}</div><div class="ni-count">${note.name} · ${ks.length}키</div></div>
+      <div class="ni-ko">${note.oct}옥타브 · ${note.id.includes("s") ? "반음" : "온음"}${altIndex >= 0 ? ` · 대체 운지: ${note.alt[altIndex].name}` : ""}</div>
+      ${note.tip ? `<details class="tip-disclosure"><summary>${note.tip}</summary><p>${note.tip}</p></details>` : ""}
+    </div>
+    <div class="summary-actions">
+      <button class="icon-button" data-action="previous" ${index === 0 ? "disabled" : ""} aria-label="이전 반음">${icon("chevron-left")}</button>
+      <button class="icon-button" id="autoplay-btn" data-action="autoplay" aria-pressed="${autoplay.playing}" aria-label="${autoplay.playing ? "자동 재생 일시정지" : "도레미 자동 재생"}">${icon(autoplay.playing ? "pause" : "play")}</button>
+      <button class="icon-button" data-action="next" ${index === NOTES.length - 1 ? "disabled" : ""} aria-label="다음 반음">${icon("chevron-right")}</button>
+    </div>
+    ${altTabs}`;
+}
+
+function renderFingerSummary(ks, on, off, first){
+  const chips = ks.length
+    ? ks.map(k => `<li data-group="${KEY_GROUP[k]}"${on.includes(k) ? ' class="is-new"' : ""}>${ARIA_FINGER[k]}</li>`).join("")
+    : '<li class="empty">없음 — 모든 키를 열어요</li>';
+  const onText = on.map(k => ARIA_FINGER[k]).join(", ");
+  const offText = off.map(k => ARIA_FINGER[k]).join(", ");
+  const change = first ? "첫 음을 선택했어요"
+    : (onText || offText)
+      ? `${onText ? `<span class="change-on">＋ ${onText}</span>` : ""}${onText && offText ? "<br>" : ""}${offText ? `<span class="change-off">− ${offText}</span>` : ""}`
+      : "이전 음과 비교할 변화가 없어요";
+  $("finger-summary").innerHTML = `
+    <div class="fs-head"><strong>누르는 손가락</strong><span>15키 중 ${ks.length}개 누름</span></div>
+    <ul class="finger-chips">${chips}</ul>
+    <div class="change-summary">${change}</div>
+    <div class="legend" aria-hidden="true">
+      <span><i style="background:var(--c-left)"></i>왼손</span><span><i style="background:var(--c-right)"></i>오른손</span>
+      <span><i style="background:var(--c-thumb)"></i>엄지</span><span><i style="background:var(--c-trill)"></i>트릴·사이드(검지 옆면)</span>
+      <span><i style="background:var(--c-pinky)"></i>새끼 특수키</span>
+    </div>`;
+}
+
+function buildSelector(){
+  $("selector3d").innerHTML = [1, 2, 3].map(oct => `
+    <div class="octave">
+      <h2>${OCT_TITLES[oct]}</h2>
+      <div class="note-grid">${NOTES.filter(n => n.oct === oct).map(n => {
+        const black = n.id.includes("s");
+        return `<button class="note-btn${black ? " black" : ""}" data-note="${n.id}" aria-pressed="false" aria-label="${n.oct}옥타브 ${n.ko} ${n.name}">
+          <span class="nb-ko">${n.ko.split("/")[0]}</span><span class="nb-en">${n.name.split("/")[0]}</span></button>`;
+      }).join("")}</div>
+    </div>`).join("");
+}
+
+function stateQuery(){
+  const params = new URLSearchParams({ note: state.noteId || "C4" });
+  if (state.altIndex >= 0) params.set("alt", String(state.altIndex));
+  return params.toString();
+}
+
+function selectNote(noteId, opts = {}){
+  const note = noteById(noteId);
+  if (!note) return false;
+  const source = opts.source || "tap";
+  if (autoplay.playing && source !== "autoplay") stopAutoplay();
+  const first = state.noteId === null;
+  const changingNote = noteId !== state.noteId;
+  const altIndex = Number.isInteger(opts.altIndex) ? opts.altIndex : (changingNote ? -1 : state.altIndex);
+  const ks = activeKeys(note, altIndex);
+  const before = new Set(state.prevKeys), after = new Set(ks);
+  const on = first ? [] : ks.filter(k => !before.has(k));
+  const off = first ? [] : state.prevKeys.filter(k => !after.has(k));
+
+  if (viewer){
+    viewer.show(ks, { on, off, diff: state.opts.diff && !first });
+    const changed = [...on, ...off];
+    if (!first && opts.animateCam !== false && state.region === "auto" && changed.length) viewer.frame(deriveRegion(changed));
+    viewer.setLabel(`3D 플루트: ${note.ko} ${note.name}${altIndex >= 0 ? ` (${note.alt[altIndex].name})` : ""}, 15키 중 ${ks.length}개 누름`);
+  }
+  state.noteId = noteId; state.altIndex = altIndex; state.prevKeys = ks;
+
+  renderNoteInfo(note, altIndex, ks);
+  renderFingerSummary(ks, on, off, first);
+  document.querySelectorAll(".note-btn").forEach(button => {
+    const active = button.dataset.note === noteId;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  $("stage-label").innerHTML = `<b>${note.ko}</b>${note.name}${altIndex >= 0 ? ` · ${note.alt[altIndex].name}` : ""}`;
+  const link2d = `./?${stateQuery()}&mode=learn`;
+  $("back-2d").setAttribute("href", link2d);
+  $("fallback-2d")?.setAttribute("href", link2d);
+  if (source !== "autoplay"){
+    try { history.replaceState(null, "", `${location.pathname}?${stateQuery()}`); } catch (error) { /* Safari 호출 빈도 제한 */ }
+  }
+  if (opts.announce !== false){
+    const fingers = ks.map(k => ARIA_FINGER[k]).join(", ");
+    $("aria-status").textContent = `${note.oct}옥타브 ${note.ko}(${note.name}). 누르는 손가락: ${fingers || "없음"}`;
+  }
+  return true;
+}
+
+function stepNote(delta){
+  const cur = noteById(state.noteId);
+  const target = cur && NOTES.find(n => n.midi === cur.midi + delta);
+  if (target) selectNote(target.id, { source:"arrow" });
+}
+
+/* 도레미 자동 재생 — 2D 앱과 같은 순서(현재 옥타브의 온음 + 한 옥타브 위 도), 100 BPM */
+function buildScaleQueue(){
+  const cur = noteById(state.noteId) || NOTES[0];
+  const whites = NOTES.filter(n => n.oct === cur.oct && !n.id.includes("s")).map(n => n.id);
+  const octaveUpC = NOTES.find(n => n.midi === noteById(whites[0]).midi + 12);
+  if (octaveUpC) whites.push(octaveUpC.id);
+  return whites;
+}
+function syncAutoplayButton(){
+  const button = $("autoplay-btn");
+  if (!button) return;
+  button.setAttribute("aria-pressed", String(autoplay.playing));
+  button.setAttribute("aria-label", autoplay.playing ? "자동 재생 일시정지" : "도레미 자동 재생");
+  button.innerHTML = icon(autoplay.playing ? "pause" : "play");
+}
+function startAutoplay(){
+  stopAutoplay();
+  autoplay.queue = buildScaleQueue();
+  autoplay.idx = 0;
+  autoplay.playing = true;
+  if (viewer && state.region === "auto") viewer.frame("hands");
+  const step = () => {
+    if (!autoplay.playing) return;
+    if (autoplay.idx >= autoplay.queue.length){ stopAutoplay(); return; }
+    selectNote(autoplay.queue[autoplay.idx++], { source:"autoplay", animateCam:false, announce:false });
+    syncAutoplayButton();
+    autoplay.timer = setTimeout(step, 600 / speed);
+  };
+  step();
+}
+function stopAutoplay(){
+  const wasPlaying = autoplay.playing;
+  autoplay.playing = false;
+  clearTimeout(autoplay.timer);
+  autoplay.timer = null;
+  syncAutoplayButton();
+  if (wasPlaying && state.noteId){
+    try { history.replaceState(null, "", `${location.pathname}?${stateQuery()}`); } catch (error) {}
+  }
+}
+
+function setRegion(region){
+  state.region = region;
+  document.querySelectorAll("#view-segment .camera-button").forEach(button =>
+    button.setAttribute("aria-pressed", String(button.dataset.region === region)));
+}
+
+function initialSelection(){
+  const params = new URLSearchParams(location.search);
+  let id = params.get("note");
+  if (!noteById(id)){
+    try { // 2D 앱에서 마지막으로 본 음 (읽기만 함)
+      const saved = JSON.parse(localStorage.getItem("fluteEdu.v2") || "null");
+      if (saved && noteById(saved.lastNoteId)) id = saved.lastNoteId;
+    } catch (error) {}
+  }
+  if (!noteById(id)) id = "C4";
+  const alt = Number.parseInt(params.get("alt") ?? "", 10);
+  return { id, alt: Number.isInteger(alt) && noteById(id).alt[alt] ? alt : -1 };
+}
+
+function bindUi(){
+  $("selector3d").addEventListener("click", event => {
+    const button = event.target.closest("[data-note]");
+    if (button) selectNote(button.dataset.note, { source:"tap" });
+  });
+  $("note-info").addEventListener("click", event => {
+    const alt = event.target.closest("[data-alt]");
+    if (alt){ selectNote(state.noteId, { source:"tap", altIndex: Number.parseInt(alt.dataset.alt, 10) }); return; }
+    const action = event.target.closest("[data-action]")?.dataset.action;
+    if (action === "previous") stepNote(-1);
+    if (action === "next") stepNote(1);
+    if (action === "autoplay") autoplay.playing ? stopAutoplay() : startAutoplay();
+  });
+  $("view-segment").addEventListener("click", event => {
+    const button = event.target.closest("[data-region]");
+    if (!button) return;
+    setRegion(button.dataset.region);
+    if (viewer) viewer.frame(state.region === "auto" ? "hands" : state.region);
+  });
+  document.querySelector(".view-switch").addEventListener("click", event => {
+    const button = event.target.closest("[data-view]");
+    if (!button) return;
+    state.view = button.dataset.view;
+    document.querySelectorAll(".view-chip").forEach(chip => chip.setAttribute("aria-pressed", String(chip === button)));
+    if (state.region === "free") setRegion("auto");
+    if (viewer){ viewer.setView(state.view); viewer.frame(viewer.framedRegion); }
+  });
+  document.querySelectorAll("[data-opt]").forEach(button => button.addEventListener("click", () => {
+    const key = button.dataset.opt;
+    state.opts[key] = !state.opts[key];
+    button.setAttribute("aria-pressed", String(state.opts[key]));
+    if (key === "hands") viewer?.setHandsVisible(state.opts.hands);
+    if (key === "ghost") viewer?.setGhost(state.opts.ghost);
+    if (key === "slow") speed = state.opts.slow ? 0.4 : 1;
+  }));
+  document.addEventListener("keydown", event => {
+    if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey || event.isComposing) return;
+    if (event.target instanceof Element && (event.target.matches("input,select,textarea") || event.target.isContentEditable)) return;
+    const delta = { ArrowRight:1, ArrowLeft:-1, ArrowUp:12, ArrowDown:-12 }[event.key];
+    if (!delta) return;
+    const cur = noteById(state.noteId);
+    if (cur && NOTES.some(n => n.midi === cur.midi + delta)){ event.preventDefault(); stepNote(delta); }
+  });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) stopAutoplay(); });
+  window.addEventListener("pagehide", stopAutoplay);
+}
+
+/* =====================================================================
+   5. 시작 — UI는 먼저 그리고, 3D는 WebGL 2가 될 때만 붙인다 (안 되면 안내 + 2D 링크)
+   ===================================================================== */
+function webgl2Available(){
+  try { return !!(window.WebGL2RenderingContext && document.createElement("canvas").getContext("webgl2")); }
+  catch (error) { return false; }
+}
+
+buildSelector();
+bindUi();
+const start = initialSelection();
+
+if (!webgl2Available()){
+  window.__flute3d.failed = true;
+  window.flute3dFail("이 기기·브라우저는 3D 그래픽(WebGL 2)을 지원하지 않아요. 아래 정보와 2D 운지표로 학습할 수 있어요.");
+} else {
+  try {
+    const [THREE, orbit, room, rounded] = await Promise.all([
+      import("./vendor/three-0.170.0/three.module.min.js"),
+      import("./vendor/three-0.170.0/addons/OrbitControls.js"),
+      import("./vendor/three-0.170.0/addons/RoomEnvironment.js"),
+      import("./vendor/three-0.170.0/addons/RoundedBoxGeometry.js")
+    ]);
+    viewer = createViewer(THREE, {
+      OrbitControls: orbit.OrbitControls, RoomEnvironment: room.RoomEnvironment, RoundedBoxGeometry: rounded.RoundedBoxGeometry
+    }, $("stage3d"));
+    viewer.onUserCamera(() => { if (state.region !== "free") setRegion("free"); });
+    viewer.keepFramingWhen(() => state.region !== "free");
+  } catch (error) {
+    console.error("3D 초기화 실패:", error);
+    viewer = null;
+    window.__flute3d.failed = true;
+    window.flute3dFail("3D 화면을 준비하지 못했어요. 2D 운지표를 이용해 주세요.");
+  }
+}
+
+selectNote(start.id, { source:"deep-link", altIndex:start.alt, announce:false });
+if (viewer){
+  viewer.frame("hands", true);
+  viewer.snap();
+  $("stage-status").hidden = true;
+  window.__flute3d.ready = true;
+}
+window.__flute3d.selectNote = selectNote;
+window.__flute3d.state = state;
+window.__flute3d.viewer = viewer;
+</script>
+<script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || ["localhost","127.0.0.1"].includes(location.hostname))){
+  navigator.serviceWorker.register("./sw.js").catch(function (){});
+}
+</script>
+</body>
+</html>
