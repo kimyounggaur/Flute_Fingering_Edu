@@ -77,6 +77,13 @@ node qa/check-3d-data.mjs
 - 손·플루트는 코드로 만든 **근사 모델**(캡슐 손가락)입니다. 키 위치·각도는 추정값이라 Blender 단계에서 `01 Source/realistic-3d-detailed-classical-flute.jpg` 같은 실측 자료로 보정해야 합니다.
 - 다음 후보: ① Blender GLB로 메시 교체 ② 3D 화면에서도 소리 재생 ③ 웹캠 손 추적(MediaPipe Hands)으로 「직접 누르기」 결과 비교.
 
+## 배포 (Vercel)
+
+- 라이브 주소: https://flute-fingering-edu.vercel.app (Vercel 프로젝트 `flute-fingering-edu`).
+- Vercel 프로젝트가 이 저장소에 **Git으로 연결**돼 있어서, `main`에 올리면 저장소 전체(`index.html` · `3d.html` · `vendor/` · `sw.js` · `manifest.webmanifest`)가 자동 배포됩니다. 토큰이나 GitHub Actions 배포 설정은 필요 없습니다.
+- 예전(2026-07)에는 CLI로 올린 로더 한 장이 GitHub에서 `index.html`만 불러와 그리는 구조였습니다. 이 방식에서는 `3d.html` · `sw.js` · `manifest.webmanifest`가 라이브에 없어서 「3D로 보기」가 404였습니다(2026-11-08 확인).
+- 배포가 끝나면 라이브 주소에서 `/3d.html`, `/sw.js`, `/manifest.webmanifest`가 열리는지(200), 「3D로 보기」가 3D 화면으로 이어지는지 확인하세요.
+
 ## 수동 QA 체크
 
 - 2D 배우기 모드에서만 「3D로 보기」가 보이고(퀴즈·직접 누르기에서는 숨김), 누르면 같은 음·대체 운지로 열린다.
