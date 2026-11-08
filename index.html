@@ -353,25 +353,46 @@ body:not([data-mode="learn"]) .stage-3d-link{display:none}
 .selector-tab[data-group="low"][aria-selected="true"]{border-color:#2c6e9e}
 .selector-tab[data-group="high"][aria-selected="true"]{border-color:#b3452f}
 .selector-tab[data-group="accidental"][aria-selected="true"]{border-color:#7d4ba0}
-#selector-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-#selector-grid[data-group="accidental"]{grid-template-columns:repeat(5,minmax(0,1fr))}
-.group-note-btn,.note-btn{
+/* 계이름 버튼 목록(.group-note-btn): 낮은 음 → 높은 음 순서로 세로 한 줄(1열 종대). 한글 이름은 왼쪽, 영문 이름은 오른쪽(3D 화면의 목록과 같은 모양).
+   버튼은 손가락으로 누르기 좋게 높이 44px 이상, 폭은 패널 가득. 고른 음은 금색 채움(3D와 같음), 강제 색상 모드에서는 3px 윤곽선.
+   8~10개를 쌓은 목록은 패널을 길게 만들 뿐, 목록 안에서 따로 스크롤하지 않는다
+   (스크롤은 페이지 하나뿐이라 휠·터치가 헷갈리지 않고, 모바일에서는 운지 그림이 위에 고정된 채 목록이 그 아래로 지나간다). */
+#selector-grid{display:flex;flex-direction:column;gap:4px}
+.group-note-btn{
+  position:relative;min-width:0;min-height:44px;padding:0 14px 0 26px;border:2px solid var(--line);border-radius:var(--radius);
+  background:#fff;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:10px;line-height:1.1;text-align:left
+}
+.group-note-btn .nb-ko{order:1;font-size:1rem;font-weight:850;white-space:nowrap}
+.group-note-btn .nb-ko br{display:none} /* '도♯/레♭'을 두 줄로 나누던 줄바꿈 — 한 줄 버튼에서는 필요 없음 */
+.group-note-btn .kbd-badges{order:2}
+.group-note-btn .nb-en{order:3;margin-left:auto;font-size:.8rem;color:var(--muted);white-space:nowrap}
+.group-note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
+.group-note-btn.black .nb-en{color:#c7cfdb}
+.group-note-btn.active,.group-note-btn.black.active{background:var(--accent);border-color:var(--accent);color:var(--ink);box-shadow:0 0 0 3px rgba(184,137,58,.35)}
+.group-note-btn.active .nb-en{color:inherit}
+/* 전체 37음 시트의 버튼(.note-btn)은 예전 모양 그대로 */
+.note-btn{
   position:relative;min-width:0;min-height:54px;padding:5px 3px;border:2px solid var(--line);border-radius:var(--radius);
   background:#fff;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05
 }
-.group-note-btn .nb-ko,.note-btn .nb-ko{font-size:.91rem;font-weight:850}
-.group-note-btn .nb-en,.note-btn .nb-en{font-size:.65rem;color:var(--muted);margin-top:3px;white-space:nowrap}
-.group-note-btn.black,.note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
-.group-note-btn.black .nb-en,.note-btn.black .nb-en{color:#c7cfdb}
-.group-note-btn.active,.note-btn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(184,137,58,.25)}
-.group-note-btn.active::after,.note-btn.active::after{
+.note-btn .nb-ko{font-size:.91rem;font-weight:850}
+.note-btn .nb-en{font-size:.65rem;color:var(--muted);margin-top:3px;white-space:nowrap}
+.note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
+.note-btn.black .nb-en{color:#c7cfdb}
+.note-btn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(184,137,58,.25)}
+.note-btn.active::after{
   content:"✓";position:absolute;top:2px;right:4px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
   background:var(--accent);color:#fff;font-size:.65rem;font-weight:900
 }
+@media (hover:hover){.group-note-btn:not(.active):hover{border-color:var(--accent)}}
 .info-dot{position:absolute;left:5px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px #fff}
+.group-note-btn .info-dot{left:9px;top:50%;margin-top:-4px} /* 한 줄 버튼: 왼쪽 여백 가운데에 */
+.group-note-btn.active .info-dot{background:var(--ink);box-shadow:0 0 0 2px var(--accent)}
 .black .info-dot{box-shadow:0 0 0 2px var(--ink)}
 .kbd-badges{position:absolute;left:3px;bottom:3px;display:flex;gap:2px;pointer-events:none}
 .kbd-badge{padding:2px 3px;border-radius:3px;background:rgba(255,255,255,.94);font-size:.48rem;font-weight:850;color:#20283a;border:1px solid currentColor}
+.group-note-btn .kbd-badges{position:static;left:auto;bottom:auto} /* 한 줄 버튼: 한글 이름 바로 옆에 나란히(영문 이름과 겹치지 않음) */
+.group-note-btn .kbd-badge{padding:2px 6px;border-radius:4px;font-size:.66rem;line-height:1.15}
 .kbd-badge.plain{color:#2c6e9e}.kbd-badge.shift{color:#b3452f}.kbd-badge.alt{color:#7d4ba0}
 .kbd-badge.kbd-flash{animation:kbd-flash .3s ease-out}
 @keyframes kbd-flash{50%{transform:scale(1.15);background:currentColor;color:#fff}}
@@ -496,9 +517,18 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
 @media (hover:none),(pointer:coarse){
   .kbd-badges,#kbd-guide{display:none!important}
 }
-@media (max-width:359px){
-  #selector-grid[data-group="accidental"]{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .group-note-btn .nb-ko{font-size:.82rem}
+/* 모바일·태블릿(한 줄로 흐르는 화면): 계이름 목록이 세로로 길어졌으니
+   · 배우기: 운지 그림을 화면 위에 고정 → 아래로 스크롤하며 음을 눌러도 그림이 계속 보인다(3D 화면과 같은 방식).
+     세로가 짧은 화면(가로로 돌린 폰 등)에서는 그림이 화면을 거의 다 차지하므로 고정하지 않는다.
+   · 스피드 연습: 문제(남은 시간 게이지)를 목록 위로 올려, 문제를 보면서 바로 아래 목록을 누른다. */
+@media (max-width:1023px){
+  body[data-mode="speed"] #quiz-panel{order:4}
+}
+@media (max-width:1023px) and (min-height:600px){
+  body[data-mode="learn"] #stage{
+    position:sticky;top:calc(var(--topbar-h) + 6px);z-index:10;
+    box-shadow:0 -6px 0 var(--app-bg),0 6px 0 var(--app-bg) /* 고정된 그림 위·아래 틈으로 스크롤되는 내용이 비치지 않게 */
+  }
 }
 @media (min-width:768px){
   main#app-main{padding:14px 20px 34px;gap:12px}
@@ -506,8 +536,6 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   #stage{height:clamp(290px,42vw,410px)}
   #key-overview{min-height:78px}
   #key-overview svg{height:62px}
-  #selector-grid{grid-template-columns:repeat(8,minmax(0,1fr))}
-  #selector-grid[data-group="accidental"]{grid-template-columns:repeat(10,minmax(0,1fr))}
   .octave-section .note-grid{grid-template-columns:repeat(8,minmax(0,1fr))}
   #key-input-pad{grid-template-columns:repeat(5,minmax(0,1fr))}
   .help-map-grid{grid-template-columns:repeat(3,1fr)}
@@ -521,7 +549,8 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
     border-top:0;border-bottom:1px solid var(--line);box-shadow:none;display:flex;justify-content:flex-start;background:rgba(255,255,255,.96)
   }
   .mode-button{min-width:150px;min-height:42px;flex-direction:row;font-size:.84rem;padding:0 16px}
-  main#app-main{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-areas:
+  /* 오른쪽 계이름 목록(세로 1열)이 왼쪽 열보다 길어도, 남는 높이는 '운지 요약' 줄(1fr)이 받는다 → 운지 그림과 요약 사이가 벌어지지 않는다 */
+  main#app-main{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:auto auto 1fr auto;grid-template-areas:
     "summary summary"
     "stage selector"
     "overview selector"
@@ -532,7 +561,6 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   #key-overview{grid-area:overview;order:unset}
   #selector-dock{grid-area:selector;order:unset;position:sticky;top:calc(var(--topbar-h) + 68px)}
   #selector-tabs{grid-template-columns:1fr}
-  #selector-grid,#selector-grid[data-group="accidental"]{grid-template-columns:repeat(4,minmax(0,1fr))}
   #quiz-panel{grid-area:quiz;order:unset}
   #app-toast{bottom:20px}
   #help-overlay{align-items:center}
