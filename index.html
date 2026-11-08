@@ -372,7 +372,7 @@ body:not([data-mode="learn"]) .stage-3d-link{display:none}
 .black .info-dot{box-shadow:0 0 0 2px var(--ink)}
 .kbd-badges{position:absolute;left:3px;bottom:3px;display:flex;gap:2px;pointer-events:none}
 .kbd-badge{padding:2px 3px;border-radius:3px;background:rgba(255,255,255,.94);font-size:.48rem;font-weight:850;color:#20283a;border:1px solid currentColor}
-.kbd-badge.ctrl{color:#2c6e9e}.kbd-badge.shift{color:#b3452f}.kbd-badge.alt{color:#7d4ba0}
+.kbd-badge.plain{color:#2c6e9e}.kbd-badge.shift{color:#b3452f}.kbd-badge.alt{color:#7d4ba0}
 .kbd-badge.kbd-flash{animation:kbd-flash .3s ease-out}
 @keyframes kbd-flash{50%{transform:scale(1.15);background:currentColor;color:#fff}}
 .selector-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
@@ -385,9 +385,20 @@ body:not([data-mode="learn"]) .stage-3d-link{display:none}
 #kbd-guide{order:4;margin:0 0 8px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-soft);padding:0 10px}
 #kbd-guide summary{min-height:44px;font-size:.78rem;font-weight:800;color:var(--muted);display:flex;align-items:center;cursor:pointer}
 .kbd-guide-body{padding:0 0 10px;font-size:.72rem;color:var(--muted)}
-.kbd-guide-row{display:grid;grid-template-columns:92px 1fr;gap:8px;align-items:center;padding:4px;border-radius:5px}
-.kbd-guide-row.row-flash{background:#fff2ce}
-.kbd-guide-row kbd{display:inline-block;min-width:22px;padding:2px 4px;margin:1px;border:1px solid #aeb7c4;border-bottom-width:2px;border-radius:4px;background:#fff;color:var(--ink);font-size:.62rem;text-align:center}
+/* 단축키 표: 열 = 위쪽 줄 숫자, 행 = 숫자만 · Shift · Alt (행 이름 색 = 버튼 배지 색) */
+.kbd-table{width:100%;max-width:440px;table-layout:fixed;border-collapse:separate;border-spacing:3px;margin:0 -3px;font-size:.72rem;color:var(--ink)}
+.kbd-table th,.kbd-table td{padding:3px 0;text-align:center;vertical-align:middle;line-height:1.15}
+.kbd-table thead th:first-child{width:74px}
+.kbd-table kbd{display:inline-block;min-width:22px;padding:2px 4px;border:1px solid #aeb7c4;border-bottom-width:2px;border-radius:4px;background:#fff;color:var(--ink);font:inherit;font-size:.62rem;font-weight:800}
+.kbd-table tbody th{padding-left:2px;text-align:left;font-weight:850}
+.kbd-table tbody th small{display:block;margin-top:1px;font-size:.6rem;font-weight:800}
+.kbd-table tr[data-shortcut-row="plain"] th small{color:#2c6e9e}
+.kbd-table tr[data-shortcut-row="shift"] th small{color:#b3452f}
+.kbd-table tr[data-shortcut-row="alt"] th small{color:#7d4ba0}
+.kbd-table td{border:1px solid var(--line);border-radius:5px;background:#fff;font-weight:800}
+.kbd-table td:empty{border-color:transparent;background:none}
+.kbd-table td small{display:block;font-size:.58rem;font-weight:700;color:var(--muted)}
+.kbd-table td.cell-flash{border-color:var(--accent);background:#fff2ce}
 .kbd-guide-note{margin-top:5px;line-height:1.45}
 #quiz-panel{
   order:6;margin:0;padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)
@@ -1081,32 +1092,42 @@ function validateFluteSvg(){
   return missing.length === 0;
 }
 
+/* 계이름 분류 탭 (버튼으로 고르기) */
 const NOTE_GROUPS = Object.freeze({
   low: Object.freeze({
-    label: "낮은 계이름", modifier: "ctrl", shortcutLabel: "Ctrl",
+    label: "낮은 계이름",
     desc: "가온 도(C4)부터 도레미파솔라시도",
-    codes: Object.freeze(["Digit1","Digit2","Digit3","Digit4","Digit5","Digit6","Digit7","Digit8"]),
     noteIds: Object.freeze(["C4","D4","E4","F4","G4","A4","B4","C5"])
   }),
   high: Object.freeze({
-    label: "높은 계이름", modifier: "shift", shortcutLabel: "Shift",
+    label: "높은 계이름",
     desc: "높은 도(C5)부터 도레미파솔라시도",
-    codes: Object.freeze(["Digit1","Digit2","Digit3","Digit4","Digit5","Digit6","Digit7","Digit8"]),
     noteIds: Object.freeze(["C5","D5","E5","F5","G5","A5","B5","C6"])
   }),
   accidental: Object.freeze({
-    label: "반음(♯)", modifier: "alt", shortcutLabel: "Alt",
+    label: "반음(♯)",
     desc: "1~2옥타브 검은건반 10개",
-    codes: Object.freeze(["Digit1","Digit2","Digit3","Digit4","Digit5","Digit6","Digit7","Digit8","Digit9","Digit0"]),
     noteIds: Object.freeze(["Cs4","Ds4","Fs4","Gs4","As4","Cs5","Ds5","Fs5","Gs5","As5"])
   })
 });
 
-const SHORTCUT_MAP = {};
-for (const group of Object.values(NOTE_GROUPS)){
-  SHORTCUT_MAP[group.modifier] = {};
-  group.codes.forEach((code, index) => { SHORTCUT_MAP[group.modifier][code] = group.noteIds[index]; });
-}
+/* 키보드 단축키 — 숫자는 키보드 위쪽 줄(e.code)만 쓴다.
+   숫자만 = 온음 도~시(C4~B4) · Shift+숫자 = 높은 도~시(C5~B5) · Alt+숫자 = 반음 도♯~라♯(C♯4~A♯4).
+   3d.html에도 같은 표가 있다(qa/check-3d-data.mjs가 둘이 같은지 검사). */
+const NOTE_SHORTCUTS = Object.freeze({
+  plain: Object.freeze({Digit1:"C4", Digit2:"D4", Digit3:"E4", Digit4:"F4", Digit5:"G4", Digit6:"A4", Digit7:"B4"}),
+  shift: Object.freeze({Digit1:"C5", Digit2:"D5", Digit3:"E5", Digit4:"F5", Digit5:"G5", Digit6:"A5", Digit7:"B5"}),
+  alt: Object.freeze({Digit1:"Cs4", Digit2:"Ds4", Digit3:"Fs4", Digit4:"Gs4", Digit5:"As4"})
+});
+/* 단축키 줄의 표시 이름과, 그 단축키로 골랐을 때 펼칠 분류 탭 */
+const SHORTCUT_ROWS = Object.freeze([
+  Object.freeze({modifier:"plain", group:"low", title:"온음", keys:"숫자", prefix:""}),
+  Object.freeze({modifier:"shift", group:"high", title:"높은 온음", keys:"Shift + 숫자", prefix:"Shift+"}),
+  Object.freeze({modifier:"alt", group:"accidental", title:"반음", keys:"Alt + 숫자", prefix:"Alt+"})
+]);
+const shortcutRow = modifier => SHORTCUT_ROWS.find(row => row.modifier === modifier);
+const shortcutLabel = (modifier, code) => `${shortcutRow(modifier).prefix}${code.replace("Digit","")}`;
+const SHORTCUT_COUNT = SHORTCUT_ROWS.reduce((sum, row) => sum + Object.keys(NOTE_SHORTCUTS[row.modifier]).length, 0);
 
 function validateNoteGroups(){
   const errors = [];
@@ -1118,7 +1139,6 @@ function validateNoteGroups(){
   Object.entries(NOTE_GROUPS).forEach(([name, group]) => {
     const expectedCount = name === "accidental" ? 10 : 8;
     if (group.noteIds.length !== expectedCount) errors.push(`${name} 음 개수 오류`);
-    if (group.codes.length !== group.noteIds.length) errors.push(`${name} codes/noteIds 길이 불일치`);
     const notes = group.noteIds.map(noteById);
     if (notes.some(note => !note)) errors.push(`${name}에 존재하지 않는 음`);
     if (name === "accidental" && group.noteIds.some(id => !id.includes("s"))) errors.push("반음 그룹에 온음 포함");
@@ -1127,8 +1147,17 @@ function validateNoteGroups(){
   });
   if (!NOTE_GROUPS.low.noteIds.includes("C5") || !NOTE_GROUPS.high.noteIds.includes("C5")) errors.push("C5 이중 분류 누락");
   if (NOTE_GROUPS.high.noteIds.at(-1) !== "C6") errors.push("높은 계이름 마지막은 C6이어야 함");
+  const expectedShortcutMidi = {plain:[60,62,64,65,67,69,71], shift:[72,74,76,77,79,81,83], alt:[61,63,66,68,70]};
+  Object.entries(expectedShortcutMidi).forEach(([modifier, midis]) => {
+    const entries = Object.entries(NOTE_SHORTCUTS[modifier] || {});
+    if (entries.map(([code]) => code).join() !== midis.map((_, index) => `Digit${index + 1}`).join()) errors.push(`${modifier} 단축키는 1부터 차례대로여야 함`);
+    if (entries.map(([, id]) => noteById(id)?.midi).join() !== midis.join()) errors.push(`${modifier} 단축키 음 오류`);
+    const group = NOTE_GROUPS[shortcutRow(modifier)?.group];
+    if (!group || entries.some(([, id]) => !group.noteIds.includes(id))) errors.push(`${modifier} 단축키 음이 연결된 분류 탭에 없음`);
+  });
+  if (SHORTCUT_COUNT !== 19) errors.push(`단축키 개수 ${SHORTCUT_COUNT} (19개여야 함)`);
   if (errors.length) errors.forEach(error => console.error("❌ SHORTCUT:", error));
-  else console.log("✅ SHORTCUT OK: 26 mappings validated");
+  else console.log(`✅ SHORTCUT OK: ${SHORTCUT_COUNT} mappings validated`);
   return errors.length === 0;
 }
 
@@ -1451,17 +1480,27 @@ function renderDebugLayer(){
 const OCT_TITLES = { 1:"1옥타브 (낮은 음)", 2:"2옥타브 (가운데 음)", 3:"3옥타브 (높은 음)" };
 
 function shortcutsForNote(noteId){
-  const result = [];
-  Object.values(NOTE_GROUPS).forEach(group => group.noteIds.forEach((id,index) => {
-    if (id === noteId){
-      result.push({
-        modifier:group.modifier,
-        label:`${group.shortcutLabel}+${group.codes[index].replace("Digit","")}`,
-        row:group.modifier
-      });
-    }
-  }));
-  return result;
+  return SHORTCUT_ROWS.flatMap(row => Object.entries(NOTE_SHORTCUTS[row.modifier])
+    .filter(([, id]) => id === noteId)
+    .map(([code]) => ({modifier:row.modifier, label:shortcutLabel(row.modifier, code)})));
+}
+
+/* 단축키 표: 위쪽 줄 숫자 1~7 × (숫자만 · Shift · Alt). 키보드 안내와 도움말이 함께 쓴다. */
+function shortcutTableMarkup(){
+  const digits = ["1","2","3","4","5","6","7"];
+  const head = `<tr><th scope="col"><span class="sr-only">누르는 키</span></th>${digits.map(digit => `<th scope="col"><kbd>${digit}</kbd></th>`).join("")}</tr>`;
+  const body = SHORTCUT_ROWS.map(row => {
+    const cells = digits.map(digit => {
+      const code = `Digit${digit}`;
+      const note = noteById(NOTE_SHORTCUTS[row.modifier][code]);
+      if (!note) return "<td></td>";
+      const [main, other] = note.ko.split("/");
+      const spoken = `${shortcutLabel(row.modifier, code)}: ${row.modifier === "shift" ? "높은 " : ""}${note.ko}`;
+      return `<td data-shortcut-cell="${row.modifier}-${code}"><span aria-hidden="true">${main}${other ? `<small>${other}</small>` : ""}</span><span class="sr-only">${spoken}</span></td>`;
+    }).join("");
+    return `<tr data-shortcut-row="${row.modifier}"><th scope="row">${row.title}<small>${row.keys}</small></th>${cells}</tr>`;
+  }).join("");
+  return `<table class="kbd-table"><thead>${head}</thead><tbody>${body}</tbody></table>`;
 }
 
 function shortcutBadges(noteId){
@@ -1565,13 +1604,9 @@ function renderGroupSelector(){
 
 function buildKeyboardGuide(){
   const target = document.getElementById("kbd-guide-body");
-  target.innerHTML = Object.values(NOTE_GROUPS).map(group => `
-    <div class="kbd-guide-row" data-shortcut-row="${group.modifier}">
-      <b>${group.shortcutLabel} · ${group.label}</b>
-      <span>${group.codes.map(code => `<kbd>${code.replace("Digit","")}</kbd>`).join("")}</span>
-    </div>`).join("") + `
+  target.innerHTML = shortcutTableMarkup() + `
     <div class="kbd-guide-note">←/→ 반음 · ↑/↓ 옥타브</div>
-    <div class="kbd-guide-note">숫자는 키보드 위쪽 줄, Ctrl·Alt는 왼쪽 키를 쓰세요. 일부 브라우저가 단축키를 가로채면 버튼이나 화살표를 이용하세요.</div>`;
+    <div class="kbd-guide-note">숫자는 키보드 위쪽 줄, Alt는 왼쪽 키를 쓰세요(Mac은 option). 일부 브라우저가 단축키를 가로채면 버튼이나 화살표를 이용하세요.</div>`;
 }
 
 function updateSelectorActive(noteId){
@@ -1579,8 +1614,10 @@ function updateSelectorActive(noteId){
     b.classList.toggle("active", b.dataset.note === noteId));
 }
 
-function syncSelectorGroupForNote(noteId, source){
+function syncSelectorGroupForNote(noteId, source, preferredGroup){
   const groups = Object.entries(NOTE_GROUPS).filter(([,group]) => group.noteIds.includes(noteId)).map(([name]) => name);
+  /* 단축키로 고르면 그 단축키의 탭을 펼친다 (예: Shift+1 높은 도 → 높은 계이름 탭) */
+  if (preferredGroup && groups.includes(preferredGroup)) appState.selectorGroup = preferredGroup;
   if (groups.length === 1 && source !== "tap") appState.selectorGroup = groups[0];
   if (groups.length === 1 && !NOTE_GROUPS[appState.selectorGroup]?.noteIds.includes(noteId)) appState.selectorGroup = groups[0];
   renderGroupSelector();
@@ -1608,7 +1645,7 @@ function selectNote(noteId, optsOrAltIndex = {}){
   appState.previousNoteId = changingNote ? previousId : appState.previousNoteId;
   changedState = computeChangedKeys(changingNote ? previousId : noteId, noteId, previousAlt, altIndex);
   applyFingering(noteId, altIndex, {announce:opts.announce !== false,announcementSuffix:opts.announcementSuffix || ""});
-  syncSelectorGroupForNote(noteId, source);
+  syncSelectorGroupForNote(noteId, source, opts.group);
   if (opts.playSound !== false && typeof playNoteById === "function"){
     playNoteById(noteId, opts.duration, {kind:source === "autoplay" ? "autoplay" : "preview", token:autoplay.token});
   }
@@ -1621,16 +1658,16 @@ function selectNote(noteId, optsOrAltIndex = {}){
   return true;
 }
 
-function flashShortcut(modifier, noteId){
+function flashShortcut(modifier, noteId, code){
   document.querySelectorAll(`.group-note-btn[data-note="${noteId}"] .kbd-badge.${modifier},.note-btn[data-note="${noteId}"] .kbd-badge.${modifier}`)
     .forEach(badge => {
       badge.classList.remove("kbd-flash");
       requestAnimationFrame(() => badge.classList.add("kbd-flash"));
     });
-  const row = document.querySelector(`[data-shortcut-row="${modifier}"]`);
-  if (row){
-    row.classList.add("row-flash");
-    setTimeout(() => row.classList.remove("row-flash"), 300);
+  const cell = document.querySelector(`#kbd-guide [data-shortcut-cell="${modifier}-${code}"]`);
+  if (cell){
+    cell.classList.add("cell-flash");
+    setTimeout(() => cell.classList.remove("cell-flash"), 300);
   }
 }
 
@@ -1639,25 +1676,22 @@ function hasOpenOverlay(){
     !document.getElementById("help-overlay").hidden;
 }
 
-/* 키보드: 26개 단축키 + ←/→ 반음, ↑/↓ 옥타브 */
+/* 키보드: 19개 단축키(숫자 1~7 · Shift+1~7 · Alt+1~5) + ←/→ 반음, ↑/↓ 옥타브 */
 document.addEventListener("keydown", e => {
   const mode = document.body.dataset.mode;
   if (!["learn","speed"].includes(mode)) return;
   if (e.target instanceof Element && (e.target.matches("input,select,textarea") || e.target.isContentEditable)) return;
   if (hasOpenOverlay() || e.isComposing || e.keyCode === 229) return;
-  const mod = (e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) ? "ctrl"
-            : (e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) ? "shift"
-            : (e.altKey && !e.ctrlKey && !e.shiftKey && !e.metaKey) ? "alt" : null;
-  const shortcutNote = mod && SHORTCUT_MAP[mod]?.[e.code];
+  const mod = (e.ctrlKey || e.metaKey || (e.shiftKey && e.altKey)) ? null
+            : e.shiftKey ? "shift" : e.altKey ? "alt" : "plain";
+  const shortcutNote = mod && NOTE_SHORTCUTS[mod][e.code];
   if (shortcutNote){
     e.preventDefault();
     if (!e.repeat){
-      if (mode === "speed") handleSpeedAnswer(shortcutNote, `${mod}+${e.code.replace("Digit","")}`);
-      else selectNote(shortcutNote, {
-        source:"shortcut",
-        announcementSuffix:` — 단축키 ${NOTE_GROUPS[mod === "ctrl" ? "low" : mod === "shift" ? "high" : "accidental"].shortcutLabel}+${e.code.replace("Digit","")}`
-      });
-      flashShortcut(mod, shortcutNote);
+      const label = shortcutLabel(mod, e.code);
+      if (mode === "speed") handleSpeedAnswer(shortcutNote, label);
+      else selectNote(shortcutNote, {source:"shortcut", group:shortcutRow(mod).group, announcementSuffix:` — 단축키 ${label}`});
+      flashShortcut(mod, shortcutNote, e.code);
     }
     return;
   }
@@ -1673,14 +1707,14 @@ document.addEventListener("keydown", e => {
 });
 
 window.debugShortcuts = async function debugShortcuts(){
-  for (const group of Object.values(NOTE_GROUPS)){
-    for (let index = 0; index < group.noteIds.length; index++){
-      selectNote(group.noteIds[index], {source:"shortcut", updateUrl:false});
-      flashShortcut(group.modifier, group.noteIds[index]);
+  for (const row of SHORTCUT_ROWS){
+    for (const [code, noteId] of Object.entries(NOTE_SHORTCUTS[row.modifier])){
+      selectNote(noteId, {source:"shortcut", group:row.group, updateUrl:false});
+      flashShortcut(row.modifier, noteId, code);
       await new Promise(resolve => setTimeout(resolve, 60));
     }
   }
-  return 26;
+  return SHORTCUT_COUNT;
 };
 /* ===== AUDIO ===== */
 let audioCtx = null;
@@ -2238,13 +2272,12 @@ function startDailyPractice(){
   startQuiz(1,{queue:buildDailyQueue(),daily:true});
 }
 
+/* 문제는 단축키가 있는 19음에서만 낸다 — 키보드로 답할 수 없는 음이나
+   같은 이름의 두 음(예: '낮은 계이름 · 도'가 C4인지 C5인지)이 섞이지 않게 */
 function buildSpeedQueue(){
-  const picks = [
-    ...fisherYates(NOTE_GROUPS.low.noteIds).slice(0,4).map(noteId => ({group:"low",noteId})),
-    ...fisherYates(NOTE_GROUPS.high.noteIds).slice(0,3).map(noteId => ({group:"high",noteId})),
-    ...fisherYates(NOTE_GROUPS.accidental.noteIds).slice(0,3).map(noteId => ({group:"accidental",noteId}))
-  ];
-  return fisherYates(picks);
+  const pick = (modifier, count) => fisherYates(Object.values(NOTE_SHORTCUTS[modifier])).slice(0,count)
+    .map(noteId => ({group:shortcutRow(modifier).group,noteId}));
+  return fisherYates([...pick("plain",4), ...pick("shift",3), ...pick("alt",3)]);
 }
 function startSpeed(){
   stopSpeed();
@@ -2344,8 +2377,6 @@ function buildHelpSvg(){
     return `<div class="help-map"><h3>${title}</h3><svg viewBox="${VIEW_PRESETS[preset]}" role="img" aria-label="${title} 키 이름">
       <use href="#flute"></use><use href="#thumb-inset"></use>${labels}</svg></div>`;
   };
-  const keyboardRows = Object.values(NOTE_GROUPS).map(group =>
-    `<div class="kbd-guide-row"><b>${group.shortcutLabel} · ${group.label}</b><span>${group.codes.map(code => `<kbd>${code.replace("Digit","")}</kbd>`).join("")}</span></div>`).join("");
   document.getElementById("help-content").innerHTML = `
     <details class="help-section" open><summary>손가락 색과 키 이름</summary><div class="help-section-body">
       <div class="legend">
@@ -2362,9 +2393,9 @@ function buildHelpSvg(){
       </div>
     </div></details>
     <details class="help-section"><summary>낮은·높은·반음 선택과 단축키</summary><div class="help-section-body">
-      <p style="line-height:1.6;margin-bottom:8px">분류 탭을 고른 뒤 계이름을 누르세요. 데스크톱에서는 왼쪽 Ctrl·Shift·Alt와 숫자 위쪽 줄을 함께 쓸 수 있어요.</p>
-      ${keyboardRows}
-      <p class="kbd-guide-note">←/→ 반음 · ↑/↓ 옥타브. 일부 브라우저나 운영체제가 단축키를 먼저 사용하면 화면 버튼을 이용하세요.</p>
+      <p style="line-height:1.6;margin-bottom:8px">분류 탭을 고른 뒤 계이름을 누르세요. 데스크톱에서는 키보드 위쪽 줄 숫자로 바로 고를 수 있어요 — 숫자 1~7은 도~시, Shift+1~7은 높은 도~시, Alt+1~5는 반음이에요.</p>
+      ${shortcutTableMarkup()}
+      <p class="kbd-guide-note">←/→ 반음 · ↑/↓ 옥타브. Alt는 왼쪽 키를 쓰세요(Mac은 option). 일부 브라우저나 운영체제가 단축키를 먼저 사용하면 화면 버튼을 이용하세요.</p>
     </div></details>
     <details class="help-section"><summary>꼭 기억할 세 가지</summary><div class="help-section-body">
       <ul class="help-rules">

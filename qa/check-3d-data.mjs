@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 2D 앱(index.html)과 3D 화면(3d.html)의 운지 데이터가 같은지 검사합니다.
+ * 2D 앱(index.html)과 3D 화면(3d.html)의 운지 데이터와 키보드 단축키 표(NOTE_SHORTCUTS)가 같은지 검사합니다.
  * 의존성 없음 · Node 18+ · 실행: node qa/check-3d-data.mjs
  *
  * index.html은 "단일 파일·외부 의존성 0" 규약 때문에 데이터를 외부 파일로 뺄 수 없어서
@@ -70,8 +70,23 @@ KEY_IDS.forEach(key => {
   if (!KEY_GROUP[key]) problems.push(`KEY_GROUP에 ${key}가 없어요`);
 });
 
+/* 키보드 단축키 표: 2D·3D가 같고, 위쪽 줄 숫자 1~7과 실제 음만 쓴다 */
+const shortcuts = readDecl("index.html", "NOTE_SHORTCUTS");
+const shortcuts3d = readDecl("3d.html", "NOTE_SHORTCUTS");
+if (!isDeepStrictEqual(shortcuts, shortcuts3d)){
+  problems.push(`NOTE_SHORTCUTS: index.html=${JSON.stringify(shortcuts)}\n           3d.html=${JSON.stringify(shortcuts3d)}`);
+}
+let shortcutCount = 0;
+for (const [modifier, map] of Object.entries(shortcuts)){
+  for (const [code, id] of Object.entries(map)){
+    shortcutCount++;
+    if (!/^Digit[1-7]$/.test(code)) problems.push(`NOTE_SHORTCUTS.${modifier}.${code}: 위쪽 줄 숫자 1~7만 써요`);
+    if (!NOTES.some(note => note.id === id)) problems.push(`NOTE_SHORTCUTS.${modifier}.${code}: 없는 음 "${id}"`);
+  }
+}
+
 if (problems.length){
-  console.error("❌ 2D·3D 운지 데이터가 어긋났어요\n" + problems.map(p => "  - " + p).join("\n"));
+  console.error("❌ 2D·3D 데이터가 어긋났어요\n" + problems.map(p => "  - " + p).join("\n"));
   process.exit(1);
 }
-console.log(`✅ 2D·3D 운지 데이터 일치 (KEY_IDS ${KEY_IDS.length} · NOTES ${NOTES.length} · ARIA_FINGER ${Object.keys(ARIA_FINGER).length} · KEY_GROUP ${Object.keys(KEY_GROUP).length})`);
+console.log(`✅ 2D·3D 운지 데이터 일치 (KEY_IDS ${KEY_IDS.length} · NOTES ${NOTES.length} · ARIA_FINGER ${Object.keys(ARIA_FINGER).length} · KEY_GROUP ${Object.keys(KEY_GROUP).length} · 단축키 ${shortcutCount})`);
