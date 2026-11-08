@@ -308,7 +308,7 @@ footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;li
         <button class="opt-row" role="switch" aria-checked="false" data-opt="slow" aria-labelledby="opt-slow-l" aria-describedby="opt-slow-d">
           <span class="opt-text"><span class="opt-label" id="opt-slow-l">천천히 움직이기</span><span class="opt-desc" id="opt-slow-d">손 동작과 자동 재생을 0.4배속으로 해요</span></span><span class="opt-switch" aria-hidden="true"></span></button>
       </div>
-      <p class="kbd-note">키보드: <span>숫자 1~7 도~시</span> · <span>Shift+1~7 높은 도~시</span> · <span>Alt+1~5 반음(도♯~라♯)</span> · <span>←/→ 반음</span> · <span>↑/↓ 옥타브</span></p>
+      <p class="kbd-note">키보드: <span>숫자 1~7 도~시</span> · <span>Shift+1~7 높은 도~시</span> · <span>Alt+1~5 반음(도♯~라♯)</span> · <span>Alt+6~0 높은 반음</span> · <span>←/→ 반음</span> · <span>↑/↓ 옥타브</span></p>
     </details>
   </div>
 </main>
@@ -408,11 +408,13 @@ const KEY_GROUP = Object.freeze({
 const SIDE_KEYS = ["bbSide","tr1","tr2"];
 const OCT_LABELS = { 1:"낮은 음", 2:"가운데 음", 3:"높은 음" };
 /* 키보드 단축키 — index.html과 같은 표(qa/check-3d-data.mjs가 비교). 숫자는 키보드 위쪽 줄(e.code)만.
-   숫자만 = 온음 도~시(C4~B4) · Shift+숫자 = 높은 도~시(C5~B5) · Alt+숫자 = 반음 도♯~라♯(C♯4~A♯4) */
+   숫자만 = 온음 도~시(C4~B4) · Shift+숫자 = 높은 도~시(C5~B5)
+   Alt+1~5 = 반음 도♯~라♯(C♯4~A♯4) · Alt+6~0 = 높은 반음 도♯~라♯(C♯5~A♯5) */
 const NOTE_SHORTCUTS = Object.freeze({
   plain: Object.freeze({Digit1:"C4", Digit2:"D4", Digit3:"E4", Digit4:"F4", Digit5:"G4", Digit6:"A4", Digit7:"B4"}),
   shift: Object.freeze({Digit1:"C5", Digit2:"D5", Digit3:"E5", Digit4:"F5", Digit5:"G5", Digit6:"A5", Digit7:"B5"}),
-  alt: Object.freeze({Digit1:"Cs4", Digit2:"Ds4", Digit3:"Fs4", Digit4:"Gs4", Digit5:"As4"})
+  alt: Object.freeze({Digit1:"Cs4", Digit2:"Ds4", Digit3:"Fs4", Digit4:"Gs4", Digit5:"As4",
+                      Digit6:"Cs5", Digit7:"Ds5", Digit8:"Fs5", Digit9:"Gs5", Digit0:"As5"})
 });
 const GROUP_HEX = { thumb:0xe74c3c, left:0x3498db, right:0x2ecc71, trill:0xf39c12, pinky:0x9b59b6 };
 const noteById = id => NOTES.find(n => n.id === id);
@@ -1219,7 +1221,7 @@ function bindUi(){
     if (key === "ghost") viewer?.setGhost(state.opts.ghost);
     if (key === "slow") speed = state.opts.slow ? 0.4 : 1;
   }));
-  /* 키보드: 숫자 1~7 · Shift+1~7 · Alt+1~5로 바로 고르기(2D 앱과 같음) + ←/→ 반음 · ↑/↓ 옥타브 */
+  /* 키보드: 숫자 1~7 · Shift+1~7 · Alt+1~5 · Alt+6~0으로 바로 고르기(2D 앱과 같음) + ←/→ 반음 · ↑/↓ 옥타브 */
   document.addEventListener("keydown", event => {
     if (event.ctrlKey || event.metaKey || event.isComposing || event.keyCode === 229) return;
     if (event.target instanceof Element && (event.target.matches("input,select,textarea") || event.target.isContentEditable)) return;
