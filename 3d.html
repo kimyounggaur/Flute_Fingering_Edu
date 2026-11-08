@@ -152,42 +152,70 @@ main#app-main{width:min(100%,1280px);margin:0 auto;padding:8px 10px 24px;display
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
 
-#side-panel{display:flex;flex-direction:column;gap:8px}
-#selector3d{padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
-.octave + .octave{margin-top:10px}
-.octave h2{font-size:.78rem;color:var(--muted);font-weight:800;margin:2px 2px 6px}
-.note-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+/* 오른쪽 패널 — 한 장의 카드: ① 옥타브 고르기 ② 그 옥타브 건반 한 줄(가로 배열) ③ 접어 둔 「보기 설정」 */
+#side-panel{padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
+#selector3d{display:grid;gap:10px;width:100%;max-width:480px;margin:0 auto}
+.octave-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.octave-btn{
+  min-height:52px;padding:6px 4px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);color:var(--muted);
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.15
+}
+.octave-btn b{font-size:.92rem;font-weight:800}
+.octave-btn span{font-size:.72rem;font-weight:650}
+.octave-btn[aria-pressed="true"]{color:var(--ink);border-color:var(--accent);background:#f8f1e5;box-shadow:inset 0 0 0 1px var(--accent)}
+/* 건반: 낮은 음 → 높은 음 순서로 한 줄(1열 횡대). 흰 칸 = 온음, 검은 칸 = 반음(♯).
+   12~13개를 한 화면에 다 넣으면 칸이 26px쯤으로 좁아져 누르기 어려우므로, 칸 폭은 터치하기 좋게(44px 이상) 두고 옆으로 밀어 본다.
+   한 화면에 6칸 반이 보이도록 폭을 잡아서 일곱 번째 칸이 반쯤 잘려 보이게 — "더 있다"는 표시. 고른 음은 centerActiveKey()가 늘 가운데로 가져온다.
+   padding은 고른 칸의 빛(3px)·포커스 링(3px+2px)이 스크롤 영역에 잘리지 않게 하는 여백이고, 좌우 -5px 여백으로 위쪽 옥타브 버튼과 가장자리를 맞춘다. */
+.piano{
+  position:relative;display:flex;gap:4px;margin:0 -5px;padding:5px 5px 7px;scroll-padding-inline:10px;
+  overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#b9c1cd transparent
+}
+.piano[hidden]{display:none}
 .note-btn{
-  position:relative;min-width:0;min-height:54px;padding:5px 3px;border:2px solid var(--line);border-radius:var(--radius);
+  flex:0 0 clamp(44px,calc((100% - 24px) / 6.5),72px);min-height:64px;padding:3px 2px;border:2px solid var(--line);border-radius:var(--radius);
   background:#fff;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05
 }
+.note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
 .note-btn .nb-ko{font-size:.91rem;font-weight:850}
 .note-btn .nb-en{font-size:.65rem;color:var(--muted);margin-top:3px;white-space:nowrap}
-.note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
 .note-btn.black .nb-en{color:#c7cfdb}
-.note-btn.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(184,137,58,.25)}
-.note-btn.active::after{
-  content:"✓";position:absolute;top:2px;right:3px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;
-  background:var(--accent);color:#fff;font-size:.6rem;font-weight:900
+.note-btn.active,.note-btn.black.active{background:var(--accent);border-color:var(--accent);color:var(--ink);box-shadow:0 0 0 3px rgba(184,137,58,.35)}
+.note-btn.active .nb-en,.note-btn.black.active .nb-en{color:inherit}
+/* 보기 설정: 기본은 접힘 */
+#options3d{margin-top:10px;border-top:1px solid var(--surface-soft)}
+#options3d summary{
+  min-height:var(--tap);padding:0 4px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  color:var(--muted);font-size:.86rem;font-weight:750;cursor:pointer;list-style:none
 }
-#options3d{display:flex;flex-wrap:wrap;gap:8px;padding:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
-#options3d h2{flex:1 0 100%;font-size:.78rem;color:var(--muted);font-weight:800;margin:2px 2px 0}
-.toggle-button{flex:1 1 auto;font-size:.82rem;padding:8px 10px}
-.toggle-button[aria-pressed="true"]{background:#f8f1e5;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.kbd-note{flex:1 0 100%;font-size:.72rem;color:var(--muted);margin:2px}
+#options3d summary::-webkit-details-marker{display:none}
+#options3d .chev{transition:transform .15s}
+#options3d[open] .chev{transform:rotate(180deg)}
+.opt-list{display:grid;gap:2px;padding:0 0 4px}
+.opt-row{
+  width:100%;min-height:54px;padding:6px 6px;border:0;border-radius:var(--radius);background:transparent;color:var(--ink);cursor:pointer;
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;text-align:left
+}
+.opt-text{display:grid;gap:2px;min-width:0}
+.opt-label{font-size:.9rem;font-weight:750}
+.opt-desc{font-size:.74rem;color:var(--muted);line-height:1.35}
+.opt-switch{position:relative;flex:0 0 auto;width:44px;height:26px;border-radius:999px;background:#8b95a5;transition:background .15s}
+.opt-switch::after{
+  content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s
+}
+.opt-row[aria-checked="true"] .opt-switch{background:var(--accent)}
+.opt-row[aria-checked="true"] .opt-switch::after{transform:translateX(18px)}
+.kbd-note{padding:2px 6px 8px;font-size:.72rem;color:var(--muted)}
 footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;line-height:1.5}
 
 /* 모바일: 3D 화면을 상단에 고정해 아래 음 목록을 넘기면서도 계속 보이게 */
 @media (max-width:1023px) and (min-height:600px){
   #viewer{position:sticky;top:var(--topbar-h);z-index:10;background:var(--app-bg);padding:6px 0;margin:-6px 0}
 }
-@media (min-width:560px){
-  .note-grid{grid-template-columns:repeat(13,minmax(0,1fr))}
-}
 @media (min-width:768px){
   main#app-main{padding:14px 20px 34px;gap:12px}
   #stage3d{height:clamp(340px,52vh,560px)}
-  .toggle-button{flex:0 1 auto}
 }
 @media (min-width:1024px){
   #app-topbar{padding:0 max(20px,calc((100vw - 1240px)/2))}
@@ -198,15 +226,23 @@ footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;li
   #note-info{grid-area:summary}
   #viewer{grid-area:viewer}
   #finger-summary{grid-area:fingers}
-  #side-panel{grid-area:panel;position:sticky;top:calc(var(--topbar-h) + 12px);gap:12px}
+  #side-panel{grid-area:panel;position:sticky;top:calc(var(--topbar-h) + 12px)}
   #stage3d{height:clamp(380px,calc(100dvh - 330px),640px)}
-  .note-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+}
+@media (hover:hover){
+  .octave-btn:hover,.note-btn:not(.active):hover{border-color:var(--accent)}
+  .opt-row:hover{background:var(--surface-soft)}
+  #options3d summary:hover{color:var(--ink)}
 }
 @media (hover:none),(pointer:coarse){ .kbd-note{display:none} }
-@media (prefers-reduced-motion:reduce){ .spinner{animation:none} }
+@media (prefers-reduced-motion:reduce){ .spinner{animation:none} #options3d .chev,.opt-switch,.opt-switch::after{transition:none} }
 @media (forced-colors:active){
   .camera-button[aria-pressed="true"],.view-chip[aria-pressed="true"],.alt-tab[aria-pressed="true"],
-  .toggle-button[aria-pressed="true"],.note-btn.active{outline:3px solid Highlight;outline-offset:-3px}
+  .octave-btn[aria-pressed="true"],.note-btn.active{outline:3px solid Highlight;outline-offset:-3px}
+  .opt-switch{border:2px solid ButtonText;background:Canvas}
+  .opt-switch::after{background:ButtonText;box-shadow:none}
+  .opt-row[aria-checked="true"] .opt-switch{background:Highlight}
+  .opt-row[aria-checked="true"] .opt-switch::after{background:HighlightText;transform:translateX(14px)}
 }
 </style>
 </head>
@@ -215,6 +251,7 @@ footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;li
 <svg class="icon-sprite" aria-hidden="true" focusable="false">
   <symbol id="icon-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
   <symbol id="icon-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="icon-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
   <symbol id="icon-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></symbol>
   <symbol id="icon-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
 </svg>
@@ -258,14 +295,20 @@ footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;li
 
   <div id="side-panel">
     <section id="selector3d" aria-label="계이름 선택"></section>
-    <section id="options3d" aria-labelledby="options-title">
-      <h2 id="options-title">표시 옵션</h2>
-      <button class="secondary-button toggle-button" data-opt="hands" aria-pressed="true">손 보기</button>
-      <button class="secondary-button toggle-button" data-opt="ghost" aria-pressed="false">손 반투명</button>
-      <button class="secondary-button toggle-button" data-opt="diff" aria-pressed="true">변화 강조</button>
-      <button class="secondary-button toggle-button" data-opt="slow" aria-pressed="false">느리게 0.4×</button>
+    <details id="options3d">
+      <summary><span>보기 설정</span><svg class="icon icon-sm chev" aria-hidden="true"><use href="#icon-chevron-down"></use></svg></summary>
+      <div class="opt-list">
+        <button class="opt-row" role="switch" aria-checked="true" data-opt="hands" aria-labelledby="opt-hands-l" aria-describedby="opt-hands-d">
+          <span class="opt-text"><span class="opt-label" id="opt-hands-l">손 보이기</span><span class="opt-desc" id="opt-hands-d">끄면 플루트만 보여요</span></span><span class="opt-switch" aria-hidden="true"></span></button>
+        <button class="opt-row" role="switch" aria-checked="false" data-opt="ghost" aria-labelledby="opt-ghost-l" aria-describedby="opt-ghost-d">
+          <span class="opt-text"><span class="opt-label" id="opt-ghost-l">손 반투명</span><span class="opt-desc" id="opt-ghost-d">손 아래의 키가 비쳐 보여요</span></span><span class="opt-switch" aria-hidden="true"></span></button>
+        <button class="opt-row" role="switch" aria-checked="true" data-opt="diff" aria-labelledby="opt-diff-l" aria-describedby="opt-diff-d">
+          <span class="opt-text"><span class="opt-label" id="opt-diff-l">달라진 키 표시</span><span class="opt-desc" id="opt-diff-d">앞 음과 비교해 새로 누르거나 뗀 키에 링을 그려요</span></span><span class="opt-switch" aria-hidden="true"></span></button>
+        <button class="opt-row" role="switch" aria-checked="false" data-opt="slow" aria-labelledby="opt-slow-l" aria-describedby="opt-slow-d">
+          <span class="opt-text"><span class="opt-label" id="opt-slow-l">천천히 움직이기</span><span class="opt-desc" id="opt-slow-d">손 동작과 자동 재생을 0.4배속으로 해요</span></span><span class="opt-switch" aria-hidden="true"></span></button>
+      </div>
       <p class="kbd-note">키보드: ←/→ 반음 · ↑/↓ 옥타브</p>
-    </section>
+    </details>
   </div>
 </main>
 
@@ -362,7 +405,7 @@ const KEY_GROUP = Object.freeze({
 /* @DATA-SYNC-END */
 
 const SIDE_KEYS = ["bbSide","tr1","tr2"];
-const OCT_TITLES = { 1:"1옥타브 (낮은 음)", 2:"2옥타브 (가운데 음)", 3:"3옥타브 (높은 음)" };
+const OCT_LABELS = { 1:"낮은 음", 2:"가운데 음", 3:"높은 음" };
 const GROUP_HEX = { thumb:0xe74c3c, left:0x3498db, right:0x2ecc71, trill:0xf39c12, pinky:0x9b59b6 };
 const noteById = id => NOTES.find(n => n.id === id);
 const activeKeys = (note, altIndex) => (altIndex >= 0 && note.alt[altIndex]) ? note.alt[altIndex].keys : note.keys;
@@ -968,16 +1011,46 @@ function renderFingerSummary(ks, on, off, first){
     </div>`;
 }
 
+/* 음 고르기: 옥타브 3칸 + 고른 옥타브의 건반 한 줄만 보여 준다(나머지 둘은 hidden).
+   건반은 낮은 음 → 높은 음 순서로 한 줄에 늘어놓는다(반음 단위, 검은 칸 = ♯). 한 줄이 패널보다 길어서 옆으로 밀어 볼 수 있고,
+   고른 음은 selectNote()가 centerActiveKey()로 늘 가운데에 가져다 놓는다. */
 function buildSelector(){
-  $("selector3d").innerHTML = [1, 2, 3].map(oct => `
-    <div class="octave">
-      <h2>${OCT_TITLES[oct]}</h2>
-      <div class="note-grid">${NOTES.filter(n => n.oct === oct).map(n => {
-        const black = n.id.includes("s");
-        return `<button class="note-btn${black ? " black" : ""}" data-note="${n.id}" aria-pressed="false" aria-label="${n.oct}옥타브 ${n.ko} ${n.name}">
-          <span class="nb-ko">${n.ko.split("/")[0]}</span><span class="nb-en">${n.name.split("/")[0]}</span></button>`;
-      }).join("")}</div>
-    </div>`).join("");
+  const octaveSwitch = `<div class="octave-switch" role="group" aria-label="옥타브">${[1, 2, 3].map(oct =>
+    `<button class="octave-btn" data-octave="${oct}" aria-pressed="false"><b>${oct}옥타브</b><span>${OCT_LABELS[oct]}</span></button>`).join("")}</div>`;
+  const pianos = [1, 2, 3].map(oct => {
+    const keys = NOTES.filter(n => n.oct === oct).map(n => {
+      const black = n.id.includes("s");
+      return `<button class="note-btn ${black ? "black" : "white"}" data-note="${n.id}" aria-pressed="false" aria-label="${n.oct}옥타브 ${n.ko} ${n.name}">
+        <span class="nb-ko">${n.ko.split("/")[0]}</span><span class="nb-en">${n.name.split("/")[0]}</span></button>`;
+    }).join("");
+    return `<div class="piano" data-piano="${oct}" role="group" aria-label="${oct}옥타브 ${OCT_LABELS[oct]} 건반" hidden>${keys}</div>`;
+  }).join("");
+  $("selector3d").innerHTML = octaveSwitch + pianos;
+}
+
+/* 고른 옥타브의 건반 줄을 펼친다. 다른 옥타브가 새로 펼쳐졌으면 true */
+function showOctave(oct){
+  let opened = false;
+  document.querySelectorAll("#selector3d [data-piano]").forEach(piano => {
+    const hide = Number(piano.dataset.piano) !== oct;
+    if (piano.hidden !== hide){ piano.hidden = hide; if (!hide) opened = true; }
+  });
+  document.querySelectorAll("#selector3d .octave-btn").forEach(button =>
+    button.setAttribute("aria-pressed", String(Number(button.dataset.octave) === oct)));
+  return opened;
+}
+
+/* 고른 음(.active)이 건반 줄의 가운데 오도록 줄만 옆으로 민다. scrollIntoView는 페이지까지 움직일 수 있어서 쓰지 않는다.
+   처음 그릴 때·옥타브를 바꿀 때·'동작 줄이기' 설정에서는 애니메이션 없이 바로 옮긴다. */
+function centerActiveKey(instant){
+  const piano = document.querySelector("#selector3d .piano:not([hidden])");
+  const key = piano && piano.querySelector(".note-btn.active");
+  if (!key) return;
+  const room = piano.scrollWidth - piano.clientWidth;
+  if (room <= 0) return;
+  const left = Math.min(room, Math.max(0, key.offsetLeft + key.offsetWidth / 2 - piano.clientWidth / 2));
+  const calm = instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  piano.scrollTo({ left, behavior: calm ? "auto" : "smooth" });
 }
 
 function stateQuery(){
@@ -1014,6 +1087,8 @@ function selectNote(noteId, opts = {}){
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
+  const octaveOpened = showOctave(note.oct);
+  centerActiveKey(first || octaveOpened);
   $("stage-label").innerHTML = `<b>${note.ko}</b>${note.name}${altIndex >= 0 ? ` · ${note.alt[altIndex].name}` : ""}`;
   const link2d = `./?${stateQuery()}&mode=learn`;
   $("back-2d").setAttribute("href", link2d);
@@ -1097,8 +1172,14 @@ function initialSelection(){
 
 function bindUi(){
   $("selector3d").addEventListener("click", event => {
-    const button = event.target.closest("[data-note]");
-    if (button) selectNote(button.dataset.note, { source:"tap" });
+    const key = event.target.closest("[data-note]");
+    if (key){ selectNote(key.dataset.note, { source:"tap" }); return; }
+    const octave = event.target.closest("[data-octave]");
+    if (!octave) return;
+    // 옥타브를 바꾸면 지금 음을 그 옥타브의 같은 계이름으로 옮긴다 (↑/↓ 키와 같은 동작) — 건반에는 늘 고른 음이 보인다
+    const cur = noteById(state.noteId), target = Number(octave.dataset.octave);
+    const same = cur && cur.oct !== target && NOTES.find(n => n.oct === target && n.midi % 12 === cur.midi % 12);
+    if (same) selectNote(same.id, { source:"tap" });
   });
   $("note-info").addEventListener("click", event => {
     const alt = event.target.closest("[data-alt]");
@@ -1125,7 +1206,7 @@ function bindUi(){
   document.querySelectorAll("[data-opt]").forEach(button => button.addEventListener("click", () => {
     const key = button.dataset.opt;
     state.opts[key] = !state.opts[key];
-    button.setAttribute("aria-pressed", String(state.opts[key]));
+    button.setAttribute("aria-checked", String(state.opts[key]));
     if (key === "hands") viewer?.setHandsVisible(state.opts.hands);
     if (key === "ghost") viewer?.setGhost(state.opts.ghost);
     if (key === "slow") speed = state.opts.slow ? 0.4 : 1;
@@ -1153,6 +1234,14 @@ function webgl2Available(){
 buildSelector();
 bindUi();
 const start = initialSelection();
+showOctave(noteById(start.id).oct);   // 3D를 불러오는 동안에도 처음부터 맞는 옥타브 건반이 보이게
+if ("ResizeObserver" in window){      // 화면 폭이 바뀌면(기기 회전·창 크기) 칸 폭도 바뀌므로 고른 음을 다시 가운데로
+  let lastWidth = 0;
+  new ResizeObserver(entries => {
+    const width = Math.round(entries[0].contentRect.width);
+    if (width !== lastWidth){ lastWidth = width; centerActiveKey(true); }
+  }).observe($("selector3d"));
+}
 
 if (!webgl2Available()){
   window.__flute3d.failed = true;
