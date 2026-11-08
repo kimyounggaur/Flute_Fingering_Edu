@@ -314,6 +314,15 @@ main#app-main{
 }
 #stage svg{display:block;width:100%;height:100%;min-width:0;max-width:100%;object-fit:contain}
 .stage-note{right:8px;bottom:6px;font-size:.66rem;color:#7e8794;background:rgba(255,255,255,.78);padding:2px 5px;border-radius:4px}
+.stage-3d-link{
+  position:absolute;top:8px;right:8px;z-index:2;min-height:44px;padding:0 13px 0 11px;display:inline-flex;align-items:center;gap:6px;
+  border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.94);color:var(--ink);
+  font-size:.78rem;font-weight:800;text-decoration:none;white-space:nowrap;box-shadow:0 2px 8px rgba(32,40,58,.08)
+}
+#stage .stage-3d-link svg{width:18px;height:18px;flex:0 0 auto} /* #stage svg(100%) 규칙이 아이콘에 걸리지 않게 */
+.stage-3d-link:hover{border-color:var(--accent)}
+.stage-3d-link:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+body:not([data-mode="learn"]) .stage-3d-link{display:none}
 #key-overview{
   order:4;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;
   min-height:68px;padding:6px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)
@@ -529,7 +538,7 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   .kbd-badge{forced-color-adjust:none}
 }
 @media print{
-  #app-topbar,#mode-nav,#view-segment,#key-overview,#selector-dock,.sheet-overlay,#help-overlay,#app-toast{display:none!important}
+  #app-topbar,#mode-nav,#view-segment,#key-overview,#selector-dock,.sheet-overlay,#help-overlay,#app-toast,.stage-3d-link{display:none!important}
 }
 </style>
 </head>
@@ -552,6 +561,7 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   <symbol id="icon-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.9 7.6-4.6M8.2 13.1l7.6 4.6"/></symbol>
   <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></symbol>
   <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M18.5 9A7.5 7.5 0 1 0 19 16"/></symbol>
+  <symbol id="icon-cube" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></symbol>
 </svg>
 
 <div id="app-shell">
@@ -872,6 +882,7 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
       <g id="debug-layer"></g>
     </svg>
     <div class="stage-note">※ 학습용으로 위/아래로 펼친 그림이에요</div>
+    <a id="open-3d" class="stage-3d-link" href="3d.html?note=C4" aria-label="지금 음을 3D 플루트로 보기"><svg class="icon icon-sm" aria-hidden="true"><use href="#icon-cube"></use></svg><span>3D로 보기</span></a>
   </div>
 
   <div id="key-overview" aria-label="15키 전체 운지 미니맵">
@@ -1332,8 +1343,18 @@ function applyFingering(noteId, altIndex = -1, opts = {}){
     updateKeyOverview(note, keys);
     updateSvgDescription(note, keys);
     syncCamera();
+    sync3dLink(noteId, altIndex);
     if (opts.announce !== false) updateAria(note, keys, opts.announcementSuffix || "");
   }
+}
+
+/* 3D 운지 보기(3d.html) 링크가 지금 보는 음·대체 운지를 따라가게 */
+function sync3dLink(noteId, altIndex){
+  const link = document.getElementById("open-3d");
+  if (!link) return;
+  const params = new URLSearchParams({note:noteId});
+  if (altIndex >= 0) params.set("alt", String(altIndex));
+  link.href = `3d.html?${params.toString()}`;
 }
 
 function updateAria(note, keys, suffix = ""){
@@ -1568,6 +1589,7 @@ function syncSelectorGroupForNote(noteId, source){
 function updateUrl(){
   const params = new URLSearchParams();
   params.set("note", appState.noteId || "C4");
+  if (appState.altIndex >= 0) params.set("alt", String(appState.altIndex));
   params.set("mode", appState.mode);
   params.set("group", appState.selectorGroup);
   history.replaceState(null, "", `${location.pathname}?${params.toString()}${location.hash}`);
@@ -2632,6 +2654,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(location.search);
   const initialGroup = NOTE_GROUPS[params.get("group")] ? params.get("group") : appState.selectorGroup;
   const initialNote = noteById(params.get("note")) ? params.get("note") : (noteById(progressState.lastNoteId) ? progressState.lastNoteId : "C4");
+  const initialAltParam = Number.parseInt(params.get("alt") ?? "", 10);
+  const initialAlt = Number.isInteger(initialAltParam) && noteById(initialNote).alt[initialAltParam] ? initialAltParam : -1;
   const initialMode = ["learn","quiz1","quiz2","speed"].includes(params.get("mode")) ? params.get("mode") : "learn";
   appState.selectorGroup = initialGroup;
   buildSelector();
@@ -2646,7 +2670,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initPwa();
   initDebugTools();
   syncSoundButton();
-  selectNote(initialNote,{source:"deep-link",playSound:false,updateUrl:false,announce:false});
+  selectNote(initialNote,{source:"deep-link",altIndex:initialAlt,playSound:false,updateUrl:false,announce:false});
   setMode(initialMode);
   renderProgressSummary();
   /* @JS-INIT */
