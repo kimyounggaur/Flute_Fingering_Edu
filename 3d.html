@@ -152,7 +152,7 @@ main#app-main{width:min(100%,1280px);margin:0 auto;padding:8px 10px 24px;display
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
 
-/* 오른쪽 패널 — 한 장의 카드: ① 옥타브 고르기 ② 그 옥타브 건반 한 줄(가로 배열) ③ 접어 둔 「보기 설정」 */
+/* 오른쪽 패널 — 한 장의 카드: ① 옥타브 고르기 ② 그 옥타브 계이름 버튼(세로 1열) ③ 접어 둔 「보기 설정」 */
 #side-panel{padding:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius)}
 #selector3d{display:grid;gap:10px;width:100%;max-width:480px;margin:0 auto}
 .octave-switch{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
@@ -163,22 +163,18 @@ main#app-main{width:min(100%,1280px);margin:0 auto;padding:8px 10px 24px;display
 .octave-btn b{font-size:.92rem;font-weight:800}
 .octave-btn span{font-size:.72rem;font-weight:650}
 .octave-btn[aria-pressed="true"]{color:var(--ink);border-color:var(--accent);background:#f8f1e5;box-shadow:inset 0 0 0 1px var(--accent)}
-/* 건반: 낮은 음 → 높은 음 순서로 한 줄(1열 횡대). 흰 칸 = 온음, 검은 칸 = 반음(♯).
-   12~13개를 한 화면에 다 넣으면 칸이 26px쯤으로 좁아져 누르기 어려우므로, 칸 폭은 터치하기 좋게(44px 이상) 두고 옆으로 밀어 본다.
-   한 화면에 6칸 반이 보이도록 폭을 잡아서 일곱 번째 칸이 반쯤 잘려 보이게 — "더 있다"는 표시. 고른 음은 centerActiveKey()가 늘 가운데로 가져온다.
-   padding은 고른 칸의 빛(3px)·포커스 링(3px+2px)이 스크롤 영역에 잘리지 않게 하는 여백이고, 좌우 -5px 여백으로 위쪽 옥타브 버튼과 가장자리를 맞춘다. */
-.piano{
-  position:relative;display:flex;gap:4px;margin:0 -5px;padding:5px 5px 7px;scroll-padding-inline:10px;
-  overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#b9c1cd transparent
-}
+/* 계이름 버튼: 낮은 음 → 높은 음 순서로 세로 한 줄(1열 종대). 흰 버튼 = 온음, 검은 버튼 = 반음(♯).
+   버튼은 손가락으로 누르기 좋게 높이 44px 이상, 폭은 패널 가득. 12~13개를 쌓은 목록은 패널을 길게 만들 뿐, 목록 안에서 따로 스크롤하지 않는다
+   (스크롤은 페이지 하나뿐이라 휠·터치가 헷갈리지 않고, 모바일에서는 3D 화면이 위에 고정된 채 목록이 그 아래로 지나간다). */
+.piano{display:flex;flex-direction:column;gap:4px}
 .piano[hidden]{display:none}
 .note-btn{
-  flex:0 0 clamp(44px,calc((100% - 24px) / 6.5),72px);min-height:64px;padding:3px 2px;border:2px solid var(--line);border-radius:var(--radius);
-  background:#fff;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05
+  min-height:44px;padding:0 14px;border:2px solid var(--line);border-radius:var(--radius);
+  background:#fff;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;line-height:1.1;text-align:left
 }
 .note-btn.black{background:var(--ink);border-color:var(--ink);color:#fff}
-.note-btn .nb-ko{font-size:.91rem;font-weight:850}
-.note-btn .nb-en{font-size:.65rem;color:var(--muted);margin-top:3px;white-space:nowrap}
+.note-btn .nb-ko{font-size:1rem;font-weight:850}
+.note-btn .nb-en{font-size:.8rem;color:var(--muted);white-space:nowrap}
 .note-btn.black .nb-en{color:#c7cfdb}
 .note-btn.active,.note-btn.black.active{background:var(--accent);border-color:var(--accent);color:var(--ink);box-shadow:0 0 0 3px rgba(184,137,58,.35)}
 .note-btn.active .nb-en,.note-btn.black.active .nb-en{color:inherit}
@@ -220,8 +216,9 @@ footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;li
 }
 @media (min-width:1024px){
   #app-topbar{padding:0 max(20px,calc((100vw - 1240px)/2))}
+  /* 오른쪽 패널(세로 목록)이 왼쪽 열보다 길어도, 남는 높이는 맨 아래 줄(1fr)이 받는다 → 3D 화면과 손가락 요약 사이가 벌어지지 않는다 */
   main#app-main{
-    display:grid;grid-template-columns:minmax(0,1fr) 360px;align-items:start;
+    display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:auto auto 1fr;align-items:start;
     grid-template-areas:"summary summary" "viewer panel" "fingers panel"
   }
   #note-info{grid-area:summary}
@@ -1021,9 +1018,8 @@ function renderFingerSummary(ks, on, off, first){
     </div>`;
 }
 
-/* 음 고르기: 옥타브 3칸 + 고른 옥타브의 건반 한 줄만 보여 준다(나머지 둘은 hidden).
-   건반은 낮은 음 → 높은 음 순서로 한 줄에 늘어놓는다(반음 단위, 검은 칸 = ♯). 한 줄이 패널보다 길어서 옆으로 밀어 볼 수 있고,
-   고른 음은 selectNote()가 centerActiveKey()로 늘 가운데에 가져다 놓는다. */
+/* 음 고르기: 옥타브 3칸 + 고른 옥타브의 계이름 버튼 목록만 보여 준다(나머지 둘은 hidden).
+   버튼은 낮은 음 → 높은 음 순서로 세로 한 줄에 쌓는다(반음 단위, 검은 버튼 = ♯). */
 function buildSelector(){
   const octaveSwitch = `<div class="octave-switch" role="group" aria-label="옥타브">${[1, 2, 3].map(oct =>
     `<button class="octave-btn" data-octave="${oct}" aria-pressed="false"><b>${oct}옥타브</b><span>${OCT_LABELS[oct]}</span></button>`).join("")}</div>`;
@@ -1038,29 +1034,11 @@ function buildSelector(){
   $("selector3d").innerHTML = octaveSwitch + pianos;
 }
 
-/* 고른 옥타브의 건반 줄을 펼친다. 다른 옥타브가 새로 펼쳐졌으면 true */
+/* 고른 옥타브의 계이름 버튼 목록만 펼친다 */
 function showOctave(oct){
-  let opened = false;
-  document.querySelectorAll("#selector3d [data-piano]").forEach(piano => {
-    const hide = Number(piano.dataset.piano) !== oct;
-    if (piano.hidden !== hide){ piano.hidden = hide; if (!hide) opened = true; }
-  });
+  document.querySelectorAll("#selector3d [data-piano]").forEach(piano => { piano.hidden = Number(piano.dataset.piano) !== oct; });
   document.querySelectorAll("#selector3d .octave-btn").forEach(button =>
     button.setAttribute("aria-pressed", String(Number(button.dataset.octave) === oct)));
-  return opened;
-}
-
-/* 고른 음(.active)이 건반 줄의 가운데 오도록 줄만 옆으로 민다. scrollIntoView는 페이지까지 움직일 수 있어서 쓰지 않는다.
-   처음 그릴 때·옥타브를 바꿀 때·'동작 줄이기' 설정에서는 애니메이션 없이 바로 옮긴다. */
-function centerActiveKey(instant){
-  const piano = document.querySelector("#selector3d .piano:not([hidden])");
-  const key = piano && piano.querySelector(".note-btn.active");
-  if (!key) return;
-  const room = piano.scrollWidth - piano.clientWidth;
-  if (room <= 0) return;
-  const left = Math.min(room, Math.max(0, key.offsetLeft + key.offsetWidth / 2 - piano.clientWidth / 2));
-  const calm = instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  piano.scrollTo({ left, behavior: calm ? "auto" : "smooth" });
 }
 
 function stateQuery(){
@@ -1097,8 +1075,7 @@ function selectNote(noteId, opts = {}){
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   });
-  const octaveOpened = showOctave(note.oct);
-  centerActiveKey(first || octaveOpened);
+  showOctave(note.oct);
   $("stage-label").innerHTML = `<b>${note.ko}</b>${note.name}${altIndex >= 0 ? ` · ${note.alt[altIndex].name}` : ""}`;
   const link2d = `./?${stateQuery()}&mode=learn`;
   $("back-2d").setAttribute("href", link2d);
@@ -1253,14 +1230,7 @@ function webgl2Available(){
 buildSelector();
 bindUi();
 const start = initialSelection();
-showOctave(noteById(start.id).oct);   // 3D를 불러오는 동안에도 처음부터 맞는 옥타브 건반이 보이게
-if ("ResizeObserver" in window){      // 화면 폭이 바뀌면(기기 회전·창 크기) 칸 폭도 바뀌므로 고른 음을 다시 가운데로
-  let lastWidth = 0;
-  new ResizeObserver(entries => {
-    const width = Math.round(entries[0].contentRect.width);
-    if (width !== lastWidth){ lastWidth = width; centerActiveKey(true); }
-  }).observe($("selector3d"));
-}
+showOctave(noteById(start.id).oct);   // 3D를 불러오는 동안에도 처음부터 맞는 옥타브 계이름 버튼이 보이게
 
 if (!webgl2Available()){
   window.__flute3d.failed = true;
