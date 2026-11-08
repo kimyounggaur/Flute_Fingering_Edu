@@ -70,18 +70,21 @@ KEY_IDS.forEach(key => {
   if (!KEY_GROUP[key]) problems.push(`KEY_GROUP에 ${key}가 없어요`);
 });
 
-/* 키보드 단축키 표: 2D·3D가 같고, 위쪽 줄 숫자 1~7과 실제 음만 쓴다 */
+/* 키보드 단축키 표: 2D·3D가 같고, 위쪽 줄 숫자(Digit0~9)와 실제 음만 쓰며, 한 음에 단축키는 하나만 */
 const shortcuts = readDecl("index.html", "NOTE_SHORTCUTS");
 const shortcuts3d = readDecl("3d.html", "NOTE_SHORTCUTS");
 if (!isDeepStrictEqual(shortcuts, shortcuts3d)){
   problems.push(`NOTE_SHORTCUTS: index.html=${JSON.stringify(shortcuts)}\n           3d.html=${JSON.stringify(shortcuts3d)}`);
 }
 let shortcutCount = 0;
+const shortcutOwner = new Map();
 for (const [modifier, map] of Object.entries(shortcuts)){
   for (const [code, id] of Object.entries(map)){
     shortcutCount++;
-    if (!/^Digit[1-7]$/.test(code)) problems.push(`NOTE_SHORTCUTS.${modifier}.${code}: 위쪽 줄 숫자 1~7만 써요`);
+    if (!/^Digit[0-9]$/.test(code)) problems.push(`NOTE_SHORTCUTS.${modifier}.${code}: 키보드 위쪽 줄 숫자(Digit0~Digit9)만 써요`);
     if (!NOTES.some(note => note.id === id)) problems.push(`NOTE_SHORTCUTS.${modifier}.${code}: 없는 음 "${id}"`);
+    if (shortcutOwner.has(id)) problems.push(`NOTE_SHORTCUTS.${modifier}.${code}: "${id}"에 단축키가 둘이에요 (${shortcutOwner.get(id)}와 겹침)`);
+    shortcutOwner.set(id, `${modifier}.${code}`);
   }
 }
 
