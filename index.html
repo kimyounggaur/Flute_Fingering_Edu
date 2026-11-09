@@ -389,9 +389,30 @@ body:not([data-mode="learn"]) .stage-3d-link{display:none}
 }
 .primary-button{background:var(--ink);color:#fff;border-color:var(--ink)}
 .secondary-button:hover{border-color:var(--accent)}
-#kbd-guide{order:4;margin:0 0 8px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface-soft);padding:0 10px}
-#kbd-guide summary{min-height:44px;font-size:.78rem;font-weight:800;color:var(--muted);display:flex;align-items:center;cursor:pointer}
-.kbd-guide-body{padding:0 0 10px;font-size:.72rem;color:var(--muted)}
+/* 상단 헤더의 「키보드」 메뉴: 누르면 헤더 바로 아래에 안내 표가 펼쳐진다.
+   화면을 덮는 창(시트)이 아니라서 열어 둔 채로 키를 눌러 볼 수 있고, 누른 칸이 반짝인다.
+   마우스·키보드 화면 전용 — 터치 기기에서는 버튼도 메뉴도 숨긴다(아래 hover:none 규칙). */
+.top-actions{position:relative}
+#kbd-menu-btn .kbd-menu-label{display:none}
+#kbd-menu-btn[aria-expanded="true"]{background:#f8f1e5;border-color:var(--accent);color:#7a581d}
+#kbd-menu{
+  position:absolute;top:calc(100% + 8px);right:0;z-index:40;box-sizing:border-box;width:min(440px,calc(100vw - 20px));
+  max-height:calc(100dvh - var(--topbar-h) - var(--nav-h) - var(--safe-bottom) - 20px);overflow:auto;padding:8px 14px 6px;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 14px 36px rgba(32,40,58,.22)
+}
+#kbd-menu[hidden]{display:none}
+.kbd-menu-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.kbd-menu-head h2{font-size:.95rem}
+#kbd-menu-close{min-width:36px;min-height:36px}
+.kbd-guide-body{padding:0 0 8px;font-size:.74rem;color:var(--muted)}
+@media (min-width:640px){
+  #kbd-menu-btn{gap:6px;padding:0 12px}
+  #kbd-menu-btn .kbd-menu-label{display:inline;font-size:.84rem;font-weight:800;white-space:nowrap}
+}
+/* 1024px 미만에서는 모드 탭이 화면 아래에 고정돼 있어서(위 max-height가 그만큼 비켜 둠), 1024px 이상에서는 탭이 위로 올라가므로 높이를 다시 넓힌다 */
+@media (min-width:1024px){
+  #kbd-menu{max-height:calc(100dvh - var(--topbar-h) - 20px)}
+}
 /* 단축키 표: 열 = 위쪽 줄 숫자 1~0(10칸), 행 = 온음 · 높은 온음 · 반음 · 높은 반음 (행 이름 색 = 버튼 배지 색) */
 .kbd-table{width:100%;max-width:440px;table-layout:fixed;border-collapse:separate;border-spacing:3px;margin:0 -3px;font-size:.72rem;color:var(--ink)}
 .kbd-table th,.kbd-table td{padding:3px 0;text-align:center;vertical-align:middle;line-height:1.15}
@@ -491,7 +512,11 @@ footer{padding:12px 10px 20px;color:#7e8794;font-size:.72rem}
 body[data-mode="quiz1"] #selector-dock,
 body[data-mode="quiz2"] #selector-dock,
 body[data-mode="quiz1"] #view-segment,
-body[data-mode="quiz2"] #view-segment{display:none}
+body[data-mode="quiz2"] #view-segment,
+body[data-mode="quiz1"] #kbd-menu-btn,
+body[data-mode="quiz2"] #kbd-menu-btn,
+body[data-mode="quiz1"] #kbd-menu,
+body[data-mode="quiz2"] #kbd-menu{display:none}
 body[data-mode="learn"] #quiz-panel{display:none}
 body[data-mode="speed"] #selector-dock{display:block}
 body[data-mode="speed"] #view-segment{display:none}
@@ -500,7 +525,7 @@ body[data-mode="quiz1"] #note-info .summary-actions,
 body[data-mode="quiz2"] #note-info .summary-actions{display:none}
 
 @media (hover:none),(pointer:coarse){
-  .kbd-badges,#kbd-guide{display:none!important}
+  .kbd-badges,#kbd-menu-btn,#kbd-menu{display:none!important}
 }
 /* 모바일·태블릿(한 줄로 흐르는 화면): 계이름 목록이 세로로 길어졌으니
    · 배우기: 운지 그림을 화면 위에 고정 → 아래로 스크롤하며 음을 눌러도 그림이 계속 보인다(3D 화면과 같은 방식).
@@ -556,7 +581,7 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
 }
 @media (forced-colors:active){
   .mode-button.mode-active,.selector-tab[aria-selected="true"],.group-note-btn.active,.note-btn.active,
-  .camera-button[aria-pressed="true"],.practice-key[aria-pressed="true"]{outline:3px solid Highlight;outline-offset:-3px}
+  .camera-button[aria-pressed="true"],.practice-key[aria-pressed="true"],#kbd-menu-btn[aria-expanded="true"]{outline:3px solid Highlight;outline-offset:-3px}
   .mini-key.pressed{fill:Highlight!important;stroke:CanvasText!important}
   .kbd-badge{forced-color-adjust:none}
 }
@@ -585,6 +610,7 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></symbol>
   <symbol id="icon-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5"/><path d="M18.5 9A7.5 7.5 0 1 0 19 16"/></symbol>
   <symbol id="icon-cube" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></symbol>
+  <symbol id="icon-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M6.5 9.5h.01M10 9.5h.01M14 9.5h.01M17.5 9.5h.01M6.5 13h.01M10 13h.01M14 13h.01M17.5 13h.01M8 16h8"/></symbol>
 </svg>
 
 <div id="app-shell">
@@ -592,6 +618,14 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   <div class="app-brand"><span class="app-brand-mark" aria-hidden="true">●</span><h1 class="app-brand-text">플루트 운지</h1></div>
   <div class="top-actions" id="header-controls">
     <button id="sound-toggle" class="icon-button" aria-pressed="true" aria-label="소리 끄기" title="소리 끄기"><svg class="icon"><use href="#icon-speaker"></use></svg></button>
+    <button id="kbd-menu-btn" class="icon-button" type="button" aria-expanded="false" aria-controls="kbd-menu" aria-label="키보드 안내" title="키보드로 빠르게 고르기"><svg class="icon"><use href="#icon-keyboard"></use></svg><span class="kbd-menu-label">키보드</span></button>
+    <div id="kbd-menu" role="region" aria-labelledby="kbd-menu-title" hidden>
+      <div class="kbd-menu-head">
+        <h2 id="kbd-menu-title">키보드로 빠르게 고르기</h2>
+        <button id="kbd-menu-close" class="icon-button" type="button" aria-label="키보드 안내 닫기"><svg class="icon"><use href="#icon-x"></use></svg></button>
+      </div>
+      <div id="kbd-guide"><div class="kbd-guide-body" id="kbd-guide-body"></div></div>
+    </div>
     <button id="help-btn" class="icon-button" aria-label="도움말 열기" title="도움말"><svg class="icon"><use href="#icon-help-circle"></use></svg></button>
     <button id="more-btn" class="icon-button" aria-haspopup="dialog" aria-controls="more-sheet" aria-label="더보기 열기" title="더보기"><svg class="icon"><use href="#icon-more-horizontal"></use></svg></button>
   </div>
@@ -917,10 +951,6 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   </div>
 
   <section id="selector-dock" aria-label="계이름 선택">
-    <details id="kbd-guide" open>
-      <summary>키보드로 빠르게 고르기</summary>
-      <div class="kbd-guide-body" id="kbd-guide-body"></div>
-    </details>
     <div id="selector-tabs" role="tablist" aria-label="계이름 분류"></div>
     <div id="selector-grid" role="tabpanel"></div>
     <div class="selector-footer">
@@ -2037,6 +2067,7 @@ function setMode(mode){
   quiz.answering = false;
   appState.mode = mode;
   document.body.dataset.mode = mode;
+  if (!["learn","speed"].includes(mode)) setKbdMenu(false);   // 단축키는 배우기·스피드 연습에서만 켜진다
   ["learn","quiz1","quiz2"].forEach(m =>
     {
       const active = m === mode || (m === "quiz1" && mode === "speed");
@@ -2461,6 +2492,7 @@ function trapFocus(event,container){
 function openOverlay(id,trigger){
   const overlay = document.getElementById(id);
   if (!overlay || !overlay.hidden) return;
+  setKbdMenu(false);   // 창이 열리면 헤더의 키보드 안내는 접는다
   overlayReturnFocus.set(id,trigger || document.activeElement);
   overlay.hidden = false;
   const shell = document.getElementById("app-shell");
@@ -2516,6 +2548,30 @@ function openAllNotes(){
   document.querySelectorAll(".octave-section").forEach(section => section.open = Number(section.dataset.oct) === (note?.oct || 1));
   openOverlay("all-notes-overlay",document.getElementById("all-notes-btn"));
   requestAnimationFrame(() => document.querySelector(`.note-btn[data-note="${appState.noteId}"]`)?.scrollIntoView({block:"center"}));
+}
+/* 헤더의 「키보드」 메뉴(안내 표). 시트와 달리 화면을 막지 않아서, 열어 둔 채로 단축키를 눌러 볼 수 있다.
+   닫히는 때: 같은 버튼 · 닫기(×) · Esc · 바깥을 누를 때 · 다른 창이 열릴 때 · 퀴즈로 바뀔 때(단축키가 꺼지는 모드) */
+function setKbdMenu(open, returnFocus){
+  const menu = document.getElementById("kbd-menu");
+  const button = document.getElementById("kbd-menu-btn");
+  if (!menu || !button || menu.hidden === !open) return;
+  menu.hidden = !open;
+  button.setAttribute("aria-expanded", String(open));
+  if (!open && returnFocus) button.focus();
+}
+function initKbdMenu(){
+  const menu = document.getElementById("kbd-menu");
+  const button = document.getElementById("kbd-menu-btn");
+  button.addEventListener("click", () => setKbdMenu(menu.hidden));
+  document.getElementById("kbd-menu-close").addEventListener("click", () => setKbdMenu(false,true));
+  document.addEventListener("pointerdown", event => {
+    if (!menu.hidden && !menu.contains(event.target) && !button.contains(event.target)) setKbdMenu(false);
+  });
+  /* initHelp()의 Esc 처리보다 먼저 등록해야 한다: 창이 열려 있을 때의 Esc는 창만 닫는다 */
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Escape" || menu.hidden || hasOpenOverlay()) return;
+    setKbdMenu(false, menu.contains(document.activeElement) || document.activeElement === button);
+  });
 }
 function initHelp(){
   const help = document.getElementById("help-overlay");
@@ -2727,6 +2783,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDebugLayer();
   initAudioUI();
   initModes();
+  initKbdMenu();
   initHelp();
   initKeyClicks();
   initPrint();
