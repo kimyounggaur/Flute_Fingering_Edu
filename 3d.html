@@ -217,8 +217,9 @@ footer{padding:6px 12px 22px;text-align:center;color:#7e8794;font-size:.72rem;li
 @media (min-width:1024px){
   #app-topbar{padding:0 max(20px,calc((100vw - 1240px)/2))}
   /* 오른쪽 패널(세로 목록)이 왼쪽 열보다 길어도, 남는 높이는 맨 아래 줄(1fr)이 받는다 → 3D 화면과 손가락 요약 사이가 벌어지지 않는다.
-     오른쪽 열 폭은 220px로 좁게 고정한다(index.html의 2D 계이름 패널과 같은 폭. 이 패널 안에서는 옥타브 3칸 ≈ 188px이 가장 넓다).
-     min-content는 안전장치: 쓰는 컴퓨터의 글꼴이 달라 내용이 더 넓어지면 그만큼만 저절로 넓어져서, 글자가 잘리거나 삐져나오지 않는다. */
+     오른쪽 열 폭은 220px로 좁게 고정한다. 이 패널에서 가장 넓은 것은 옥타브 3칸이고, 그 칸들이 줄바꿈 없이 들어가는 패널 폭은
+     약 210~213px이다(2D 패널은 반음 줄 때문에 240px).
+     min-content는 안전장치: 쓰는 컴퓨터의 글꼴이 달라 내용이 220px를 넘으면 그만큼만 저절로 넓어져서, 글자가 잘리거나 삐져나오지 않는다. */
   main#app-main{
     display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,min-content);grid-template-rows:auto auto 1fr;align-items:start;
     grid-template-areas:"summary summary" "viewer panel" "fingers panel"
