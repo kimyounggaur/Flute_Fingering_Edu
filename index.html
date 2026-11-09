@@ -558,8 +558,11 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
     border-top:0;border-bottom:1px solid var(--line);box-shadow:none;display:flex;justify-content:flex-start;background:rgba(255,255,255,.96)
   }
   .mode-button{min-width:150px;min-height:42px;flex-direction:row;font-size:.84rem;padding:0 16px}
-  /* 오른쪽 계이름 목록(세로 1열)이 왼쪽 열보다 길어도, 남는 높이는 '운지 요약' 줄(1fr)이 받는다 → 운지 그림과 요약 사이가 벌어지지 않는다 */
-  main#app-main{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:auto auto 1fr auto;grid-template-areas:
+  /* 오른쪽 계이름 목록(세로 1열)이 왼쪽 열보다 길어도, 남는 높이는 '운지 요약' 줄(1fr)이 받는다 → 운지 그림과 요약 사이가 벌어지지 않는다.
+     오른쪽 열 폭은 220px로 좁게 고정한다(가장 넓은 줄, 반음 「도♯/레♭ [Alt+1] C♯4/D♭4」가 한 줄에 들어가는 최소 폭이 약 215px).
+     min-content는 안전장치: 쓰는 컴퓨터의 글꼴이 달라 내용이 더 넓어지면 그만큼만 저절로 넓어져서, 글자가 잘리거나 삐져나오지 않는다.
+     (이 폭은 3d.html의 오른쪽 패널과 같게 맞춘다.) */
+  main#app-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,min-content);grid-template-rows:auto auto 1fr auto;grid-template-areas:
     "summary summary"
     "stage selector"
     "overview selector"
@@ -568,8 +571,11 @@ body[data-mode="quiz2"] #note-info .summary-actions{display:none}
   #view-segment{display:none!important}
   #stage{grid-area:stage;order:unset;height:min(40vw,430px)}
   #key-overview{grid-area:overview;order:unset}
-  #selector-dock{grid-area:selector;order:unset;position:sticky;top:calc(var(--topbar-h) + 68px)}
+  #selector-dock{grid-area:selector;order:unset;position:sticky;top:calc(var(--topbar-h) + 68px);padding:6px}
   #selector-tabs{grid-template-columns:1fr}
+  /* 좁은 패널용 줄 모양: 안쪽 여백과 칸 사이 간격만 줄인다(모바일의 넓은 목록과 「전체 37음 보기」 시트는 그대로) */
+  #selector-dock .group-note-btn{padding:0 10px 0 22px;gap:6px}
+  #selector-dock .group-note-btn .info-dot{left:7px}
   #quiz-panel{grid-area:quiz;order:unset}
   #app-toast{bottom:20px}
   #help-overlay{align-items:center}
